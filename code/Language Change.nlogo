@@ -4,6 +4,8 @@ nodes-own [
   state            ;; current grammar state (ranges from 0 to 1)
   orig-state       ;; each person's initially assigned grammar state
   spoken-state     ;; output of person's speech (0 or 1)
+  age              ;; current age of node
+  gamma            ;; learning rate of node
 ]
 
 ;;;
@@ -29,6 +31,17 @@ to make-node
     fd max-pxcor
     set size 2
     set state 0.0
+    set age 0
+
+    ifelse deterministic-gamma?
+    [ set gamma initial-gamma ]
+    [ let temp-gamma random-normal initial-gamma gamma-sd
+      ifelse temp-gamma > 0
+      [ set gamma temp-gamma ]
+      [ set gamma 0.01 ] ;; Setting 0.01 as the initial lower bound for gamma, though it can change later
+
+    ]
+
   ]
 end
 
@@ -67,6 +80,10 @@ to update-color
   set color scale-color red state 0 1
 end
 
+to grow-older
+  set age age + 1
+end
+
 to reset-nodes
   clear-all-plots
   ask nodes [
@@ -92,8 +109,10 @@ end
 ;;;
 
 to go
+  if (ticks = simulation-limit) [stop]
   ask nodes [ communicate-via update-algorithm ]
   ask nodes [ update-color ]
+  ask nodes [ grow-older ]
   tick
 end
 
@@ -154,19 +173,23 @@ end
 
 ;; Listening uses a linear reward/punish algorithm
 to listen [heard-state] ;; node procedure
-  let gamma 0.01 ;; for now, gamma is the same for all nodes
+
+  ;; Moved gamma to agents own
+  ;; let gamma 0.01 ;; for now, gamma is the same for all nodes
+
+
   ;; choose a grammar state to be in
   ifelse random-float 1.0 <= state
   [
     ;; if grammar 1 was heard
     ifelse heard-state = 1
-    [ set state state + (gamma * (1 - state)) ]
-    [ set state (1 - gamma) * state ]
+    [ set state state + (gamma * (1 - state)) ] ;; reward: update, increase state
+    [ set state (1 - gamma) * state ]           ;; punish: update, decrease state
   ][
     ;; if grammar 0 was heard
     ifelse heard-state = 0
-    [ set state state * (1 - gamma) ]
-    [ set state gamma + state * (1 - gamma) ]
+    [ set state state * (1 - gamma) ]           ;; reward: update, decrease state
+    [ set state gamma + state * (1 - gamma) ]   ;; punish: update, increase state
   ]
 end
 
@@ -383,7 +406,7 @@ num-nodes
 num-nodes
 2
 100
-100.0
+40.0
 1
 1
 NIL
@@ -412,7 +435,7 @@ CHOOSER
 update-algorithm
 update-algorithm
 "individual" "threshold" "reward"
-0
+2
 
 SLIDER
 225
@@ -509,6 +532,161 @@ NIL
 NIL
 NIL
 0
+
+TEXTBOX
+10
+502
+118
+514
+Additions:
+12
+0.0
+1
+
+SLIDER
+8
+520
+181
+554
+simulation-limit
+simulation-limit
+0
+1000
+700.0
+100
+1
+NIL
+HORIZONTAL
+
+MONITOR
+195
+509
+279
+554
+Mean state
+mean [state] of nodes
+3
+1
+11
+
+SLIDER
+8
+565
+181
+599
+initial-gamma
+initial-gamma
+0.01
+0.04
+0.04
+0.01
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+187
+568
+295
+602
+Learning rate for reward algorithm
+12
+0.0
+1
+
+PLOT
+378
+504
+578
+654
+Distribution of node age
+NIL
+NIL
+0.0
+1000.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "histogram [age] of nodes"
+
+SWITCH
+8
+684
+201
+718
+age-influences-gamma?
+age-influences-gamma?
+1
+1
+-1000
+
+SWITCH
+8
+602
+192
+636
+deterministic-gamma?
+deterministic-gamma?
+1
+1
+-1000
+
+SLIDER
+8
+639
+172
+673
+gamma-sd
+gamma-sd
+0
+0.05
+0.05
+0.01
+1
+NIL
+HORIZONTAL
+
+PLOT
+583
+504
+783
+654
+Gamma distribution
+NIL
+NIL
+0.0
+0.15
+0.0
+10.0
+false
+false
+"" ""
+PENS
+"default" 0.01 1 -16777216 true "" "histogram [gamma] of nodes"
+
+MONITOR
+683
+658
+785
+703
+Mean gamma
+mean [gamma] of nodes
+3
+1
+11
+
+TEXTBOX
+175
+637
+363
+692
+SD for gamma if not determinstic.\nInitial-gamma serves as mean
+12
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
