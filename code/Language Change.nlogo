@@ -1,3 +1,8 @@
+;; TODO:
+;; Think about how age & gamma should be initialized, use the function to determine
+;;    gamma as opposed to setting it as a constant and modifying it?
+;; Implement different gamma modification curves
+
 breed [nodes node]
 
 nodes-own [
@@ -813,7 +818,7 @@ group1-age
 group1-age
 0
 700
-100.0
+50.0
 50
 1
 NIL
@@ -828,7 +833,7 @@ group2-age
 group2-age
 0
 700
-100.0
+350.0
 50
 1
 NIL
@@ -843,7 +848,7 @@ age-sd
 age-sd
 0
 50
-10.0
+30.0
 10
 1
 NIL
