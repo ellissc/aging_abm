@@ -3,6 +3,8 @@
 ;;    gamma as opposed to setting it as a constant and modifying it?
 ;; Implement different gamma modification curves
 
+globals [max-age]
+
 breed [nodes node]
 
 nodes-own [
@@ -26,6 +28,8 @@ to setup
   distribute-grammars
   initialize-groups
   create-network
+  let init-max-age (max [age] of nodes)
+  set max-age (simulation-limit + init-max-age)
   repeat 100 [ layout ]
   reset-ticks
 end
@@ -71,12 +75,10 @@ end
 
 to initialize-age
   ifelse deterministic-age?
-
   [
     ifelse (cohort = 1)
     [ set age group1-age ]
     [ set age group2-age ]
-
   ]
 
   [ ifelse (cohort = 1)
@@ -132,10 +134,10 @@ end
 
 to grow-older [ growth-influence ]
   set age age + 1
-  modify-gamma growth-influence
+  modify-gamma age growth-influence
 end
 
-to modify-gamma [ growth-influence ]
+to modify-gamma [ age-param growth-influence ]
   let linear-constant 0.001
   let minimum-gamma 0
   if (ticks mod 100 = 0)
@@ -644,7 +646,7 @@ initial-gamma
 initial-gamma
 0.01
 0.04
-0.01
+0.04
 0.01
 1
 NIL
@@ -682,7 +684,7 @@ SWITCH
 8
 594
 184
-628
+627
 deterministic-gamma?
 deterministic-gamma?
 1
@@ -693,7 +695,7 @@ SLIDER
 8
 632
 184
-666
+665
 gamma-sd
 gamma-sd
 0
@@ -747,7 +749,7 @@ CHOOSER
 7
 670
 184
-716
+715
 gamma_____with-age
 gamma_____with-age
 "increases" "decreases" "is-constant"
@@ -777,7 +779,7 @@ SLIDER
 467
 514
 639
-548
+547
 percent-group2
 percent-group2
 0
@@ -792,7 +794,7 @@ TEXTBOX
 470
 498
 570
-509
+516
 Additions: AGE
 10
 0.0
@@ -802,7 +804,7 @@ SWITCH
 468
 552
 640
-586
+585
 deterministic-age?
 deterministic-age?
 0
@@ -813,7 +815,7 @@ SLIDER
 648
 514
 820
-548
+547
 group1-age
 group1-age
 0
@@ -828,7 +830,7 @@ SLIDER
 647
 552
 819
-586
+585
 group2-age
 group2-age
 0
@@ -843,7 +845,7 @@ SLIDER
 672
 589
 819
-623
+622
 age-sd
 age-sd
 0
@@ -853,6 +855,17 @@ age-sd
 1
 NIL
 HORIZONTAL
+
+MONITOR
+672
+664
+740
+710
+NIL
+max-age
+3
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?

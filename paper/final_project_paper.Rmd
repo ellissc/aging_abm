@@ -103,6 +103,195 @@ Gamma modification:
 
 - Minimum gamma is 0; potential for some agents to stop learning
 
+```{r gamma-plot, echo = F}
+gamma.function = function(a, b, age, constant){
+    return ( constant * (age^a) + b )
+}
+
+## Normal cost curve
+a.exp = 1
+initial.gamma = 0.01
+increasing = 1
+front.constant = 0.05
+
+normal.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# High cost 
+a.exp = 2
+initial.gamma = 0.01
+increasing = 1
+front.constant = 0.05
+
+high.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Higher cost 
+a.exp = 3
+initial.gamma = 0.01
+increasing = 1
+front.constant = 0.05
+
+higher.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Low cost 
+a.exp = 0.5
+initial.gamma = 0.01
+increasing = 1
+front.constant = 0.05
+
+low.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Lower cost 
+a.exp = 0.25
+initial.gamma = 0.01
+increasing = 1
+front.constant = 0.05
+
+lower.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+normal.cost |> 
+    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
+    ggplot(aes(x = age, y = gamma, group = a, color = a))+
+    geom_point()+
+    geom_line()+
+    theme_bw()+
+    xlab("Proportional age")+
+    ylab("Gamma parameter")+
+    ggtitle("Learnability parameter changing with age, increasing")+
+    ylim(0, 0.07)
+
+```
+
+
+
+```{r gamma-plot-decreasing, echo = F}
+gamma.function = function(a, b, age, constant){
+    return ( constant * (-age^a) + b )
+}
+
+## A as cost!!!
+
+## Normal cost curve
+a.exp = 1
+initial.gamma = 0.05
+front.constant = 0.05
+
+normal.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# High cost 
+a.exp = 2
+front.constant = 0.05
+
+high.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Higher cost 
+a.exp = 3
+front.constant = 0.05
+
+higher.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Low cost 
+a.exp = 0.5
+front.constant = 0.05
+
+low.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Lower cost 
+a.exp = 0.25
+front.constant = 0.05
+
+lower.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+normal.cost |> 
+    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
+    ggplot(aes(x = age, y = gamma, group = a, color = a))+
+    geom_point()+
+    geom_line()+
+    theme_bw()+
+    xlab("Proportional age")+
+    ylab("Gamma parameter")+
+    ggtitle("Learnability parameter changing with age, decreasing")
+
+```
+
+
+```{r gamma-plot-sigmoid, echo = F}
+gamma.function = function(a, age, constant){
+    return ( constant / ( 1 + exp(-(2*age - 1)*10*a)  ))
+}
+
+## Normal cost curve
+a.exp = 1
+initial.gamma = 0.05
+front.constant = 0.05
+
+normal.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# High cost 
+a.exp = 2
+front.constant = 0.05
+
+high.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Higher cost 
+a.exp = 3
+front.constant = 0.05
+
+higher.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Low cost 
+a.exp = 0.5
+front.constant = 0.05
+
+low.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Lower cost 
+a.exp = 0.25
+front.constant = 0.05
+
+lower.cost <- data.frame(age = seq(0,1,0.1)) |> 
+    mutate(gamma = gamma.function(a.exp, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+normal.cost |> 
+    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
+    ggplot(aes(x = age, y = gamma, group = a, color = a))+
+    geom_point()+
+    geom_line()+
+    theme_bw()+
+    xlab("Proportional age")+
+    ylab("Gamma parameter")+
+    ggtitle("Learnability parameter changing with age, sigmoid")
+
+```
+
 Communication:
 
 - Speaking
