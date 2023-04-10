@@ -6,6 +6,7 @@ nodes-own [
   spoken-state     ;; output of person's speech (0 or 1)
   age              ;; current age of node
   gamma            ;; learning rate of node
+  cohort           ;; group of node (1 or 2)
 ]
 
 ;;;
@@ -14,10 +15,11 @@ nodes-own [
 
 to setup
   clear-all
-  set-default-shape nodes "circle"
+  ;; set-default-shape nodes "circle"
   ask patches [ set pcolor gray ]
   repeat num-nodes [ make-node ]
   distribute-grammars
+  initialize-groups
   create-network
   repeat 100 [ layout ]
   reset-ticks
@@ -42,6 +44,49 @@ to make-node
 
     ]
 
+  ]
+end
+
+to initialize-groups
+  ask nodes [set cohort 1]
+
+  ask n-of ((percent-group2 / 100) * num-nodes) nodes
+  [ set cohort 2]
+
+  ask nodes [ initialize-age ]
+
+  ask nodes [update-shape]
+end
+
+to update-shape
+  ifelse cohort = 1
+  [ set shape "square" ]
+  [ set shape "triangle" ]
+end
+
+to initialize-age
+  ifelse deterministic-age?
+
+  [
+    ifelse (cohort = 1)
+    [ set age group1-age ]
+    [ set age group2-age ]
+
+  ]
+
+  [ ifelse (cohort = 1)
+    [
+      let temp-age random-normal group1-age age-sd
+      ifelse temp-age > 0
+      [ set age temp-age]
+      [ set age 0]
+    ]
+    [
+      let temp-age random-normal group2-age age-sd
+      ifelse temp-age > 0
+      [ set age temp-age]
+      [ set age 0]
+    ]
   ]
 end
 
@@ -80,9 +125,25 @@ to update-color
   set color scale-color red state 0 1
 end
 
-to grow-older
+to grow-older [ growth-influence ]
   set age age + 1
+  modify-gamma growth-influence
 end
+
+to modify-gamma [ growth-influence ]
+  let linear-constant 0.001
+  let minimum-gamma 0
+  if (ticks mod 100 = 0)
+  [
+    ifelse (growth-influence = "increases")
+    [ set gamma gamma + linear-constant ]
+    [ if (growth-influence = "decreases")
+      [set gamma gamma - linear-constant ]
+    ]
+  ]
+  if (gamma < minimum-gamma) [set gamma minimum-gamma]
+end
+
 
 to reset-nodes
   clear-all-plots
@@ -112,7 +173,7 @@ to go
   if (ticks = simulation-limit) [stop]
   ask nodes [ communicate-via update-algorithm ]
   ask nodes [ update-color ]
-  ask nodes [ grow-older ]
+  ask nodes [ grow-older gamma_____with-age]
   tick
 end
 
@@ -288,10 +349,10 @@ ticks
 30.0
 
 PLOT
-5
-365
-365
-485
+7
+366
+367
+486
 Mean state of language users in the network
 Time
 State
@@ -391,10 +452,10 @@ NIL
 1
 
 OUTPUT
-375
-415
-750
-485
+373
+388
+749
+436
 14
 
 SLIDER
@@ -421,7 +482,7 @@ percent-grammar-1
 percent-grammar-1
 0
 100
-60.0
+40.0
 1
 1
 %
@@ -446,7 +507,7 @@ alpha
 alpha
 0
 0.05
-0.025
+0.005
 0.0050
 1
 NIL
@@ -509,9 +570,9 @@ logistic?
 TEXTBOX
 15
 205
-210
+211
 356
-* threshold-val and sink state only\napply for \"individual\" and \"threshold\"\nupdating algorithms\n\n* when logistic? is off, there's a\nbuilt-in bias towards grammar 1\n\n* alpha only applies to the\n\"reward\" updating algorithm\nand when logistic? is on
+* threshold-val and sink state only\napply for \"individual\" and \"threshold\"\nupdating algorithms\n\n* when logistic? is off, there's a\nbuilt-in bias towards grammar 1\n\n* alpha only applies to the\n\"reward\" updating algorithm\nand when logistic? is on; \nbias in favor of grammar 1.
 10
 0.0
 0
@@ -537,9 +598,9 @@ TEXTBOX
 10
 502
 118
-514
-Additions:
-12
+520
+Additions: GAMMA\n
+10
 0.0
 1
 
@@ -547,7 +608,7 @@ SLIDER
 8
 520
 181
-554
+553
 simulation-limit
 simulation-limit
 0
@@ -570,35 +631,35 @@ mean [state] of nodes
 11
 
 SLIDER
-8
-565
-181
-599
+9
+556
+182
+589
 initial-gamma
 initial-gamma
 0.01
 0.04
-0.04
+0.01
 0.01
 1
 NIL
 HORIZONTAL
 
 TEXTBOX
-187
-568
-295
-602
-Learning rate for reward algorithm
-12
+186
+560
+294
+594
+* Learning rate for reward algorithm
+10
 0.0
 1
 
 PLOT
-378
-504
-578
-654
+468
+589
+668
+709
 Distribution of node age
 NIL
 NIL
@@ -610,24 +671,13 @@ true
 false
 "" ""
 PENS
-"default" 1.0 1 -16777216 true "" "histogram [age] of nodes"
+"default" 25.0 1 -16777216 true "" "histogram [age] of nodes"
 
 SWITCH
 8
-684
-201
-718
-age-influences-gamma?
-age-influences-gamma?
-1
-1
--1000
-
-SWITCH
-8
-602
-192
-636
+594
+184
+628
 deterministic-gamma?
 deterministic-gamma?
 1
@@ -636,42 +686,42 @@ deterministic-gamma?
 
 SLIDER
 8
-639
-172
-673
+632
+184
+666
 gamma-sd
 gamma-sd
 0
 0.05
-0.05
+0.01
 0.01
 1
 NIL
 HORIZONTAL
 
 PLOT
-583
-504
-783
-654
+300
+514
+460
+664
 Gamma distribution
 NIL
 NIL
 0.0
-0.15
+0.1
 0.0
 10.0
-false
+true
 false
 "" ""
 PENS
 "default" 0.01 1 -16777216 true "" "histogram [gamma] of nodes"
 
 MONITOR
-683
-658
-785
-703
+300
+667
+402
+712
 Mean gamma
 mean [gamma] of nodes
 3
@@ -679,14 +729,125 @@ mean [gamma] of nodes
 11
 
 TEXTBOX
-175
-637
-363
-692
-SD for gamma if not determinstic.\nInitial-gamma serves as mean
-12
+187
+634
+290
+658
+* SD for gamma if not determinstic.\n
+10
 0.0
 1
+
+CHOOSER
+7
+670
+184
+716
+gamma_____with-age
+gamma_____with-age
+"increases" "decreases" "is-constant"
+0
+
+TEXTBOX
+374
+440
+617
+465
+Default settings for original parameters:\nreward, logistic, alpha = 0.005
+10
+0.0
+1
+
+TEXTBOX
+186
+591
+301
+642
+* if not deterministic,\nInitial-gamma serves as mean
+10
+0.0
+1
+
+SLIDER
+467
+514
+639
+548
+percent-group2
+percent-group2
+0
+100
+0.0
+10
+1
+%
+HORIZONTAL
+
+TEXTBOX
+470
+498
+570
+509
+Additions: AGE
+10
+0.0
+1
+
+SWITCH
+468
+552
+640
+586
+deterministic-age?
+deterministic-age?
+0
+1
+-1000
+
+SLIDER
+648
+514
+820
+548
+group1-age
+group1-age
+0
+700
+100.0
+50
+1
+NIL
+HORIZONTAL
+
+SLIDER
+647
+552
+819
+586
+group2-age
+group2-age
+0
+700
+100.0
+50
+1
+NIL
+HORIZONTAL
+
+SLIDER
+672
+589
+819
+623
+age-sd
+age-sd
+0
+50
+10.0
+10
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
