@@ -17,77 +17,224 @@ knitr::opts_knit$set(root.dir = here())
 
 \newcommand\latexcode[1]{#1}
 
-# Introduction
+# Abstract
 
-## Aging
+Language change can be understood as representing the dynamic relationship between group-level and individual usage patterns. 
+As statistical learners who are sensitive to the underlying distributional properties of language, when usage patterns vary across time, it would be expected that the language acquisition of different age groups will be impacted by the usage patterns they experience.
+While previous research has shown differences in the language representation and cognitive capabilities over the lifespan (i.e., early vocab spurt, late cognitive decline), the impact of varying learning rates on language change is not well understood.
+Using an agent-based model of (syntactic) language change, this project aims to explore the interaction between learning rates and aging may impact diachronic changes in usage patterns of language.
+
+
+
+# Introduction
 
 ## Language change
 
+<!-- Languages change over historical time~\cite<e.g.,>{bybee2015language} in terms of their usage statistics across users \cite{michelQuantitativeAnalysisCulture2011}. Yet, little is known about how these changes impact the meaning representations of an individual language user.  -->
+<!-- The organization of lexico-semantic representations across the lifespan has been studied using word association data~\cite<e.g.,>{dedeyneSmallWorldWords2019}.  -->
+<!-- Dubossarsky and colleagues \citeyear{dubossarskyQuantifyingStructureFree2017} analyzed lexical association networks and found that their organization changes over time. Namely, they observed a U-shaped developmental trajectory: networks are small and sparse (e.g., reduction of average shortest path length and entropy) during language acquisition (10--18 y.o.), they are dense and well-connected in mid-life (e.g., increased in-degree and out-degree), and then they become sparse again, with a larger proportion of isolated, peripheral nodes, in late-life (e.g., reduced in/out degree, increased entropy).  -->
+
 ## Verb bias example
+
+<!-- Verb bias stuff w/ Rachel  -->
+
+## Aging
+
+<!-- In addition to age-related differences in lexico-semantic organization, previous studies have used electroencephalography (EEG) to explore the relationship between lexico-semantic processing and aging~\cite<e.g.,>{federmeier2010age, wlotkoPredictNotPredict2012}. Some signatures of predictive processing (e.g., increased anterior positivity in response to a word that is less closely related to a preceding cue) are reduced in older adults, suggesting that aging may be related to changes in neural mechanisms of prediction and/or in the predictability relationships among words and meanings. -->
+
+## Previous models of language change
+
+Beeksma et al., 2017
+
+Troutman et al., ?
+
+
 
 # Model
 
 ## Overview
 
 I aim to explore how potential changes in learning rates across the lifespan may impact overall population-level patterns of language change. 
+The model will explore the usage and spread of a grammatical variant throughout a population.
+For example, the past tense ending has some variation, either appearing as "-t" or "-ed", such as in "learnt" or "learned". [**verb bias example**]
+*To define: learn / learning rates*
+The following main assumptions are based on those found in Beeksma et al. and Troutman et al.:
 
-Assumptions, modified from Beeksma et al.:
+1. Language learning is based on imitating others, though this may change over the lifespan.
 
-1. Language learning is based on imitating others, **though this may change over the lifespan and may depend on group membership**.
+    - E.g., individuals may learn quickly early on, but slow down as they age.
 
-2. Variability of an individual's language model is limited.
+2. There are variations in preference between individuals.
+
+    - E.g., some individuals learn more quickly than others.
 
 3. Language can be influenced by external factors.
 
-Outcome patterns that from Troutman et al.:
+    - E.g., more willing to learn from in-group members, natural bias towards a given variant.
 
-1. S-shaped curve: "Change happens slowly, then proceeds rapidly before slowing down again."
+With this model, the main outcome patterns are as follows (adapted from Troutman et al.):
 
-2. Intraspeaker variation: "Change is gradual and there is a period of intraspeaker variation"
+1. S-shaped curve in usage patterns: Change happens slowly, then proceeds rapidly before slowing down again.
 
-3. Categorical norms: "With competition, speakers move toward categorically using just one of the competing variants"
+2. Intra-speaker variation: Change is gradual and there is a period of intra-speaker variation.
 
-4. Multi-stability: "Language change can have multiple stable outcomes"
+3. Categorical norms: With competition, speakers move toward categorically using just one of the competing variants.
 
-5. Threshold problem: "Initially rare variants may manage to spread through entire speech communities"
+4. Multi-stability: Language change can have multiple stable outcomes. **Additionally, some variation in language usage may co-exist. (Verb bias example)**
 
-Modifications: Some instances of syntactic variation, such as verb biases (citations) may co-exist over time within a speech community. 
+5. Threshold problem: Initially rare variants may manage to spread through entire speech communities.
 
-## Description
+## Model description
 
-Agents have:
+This model is based on the language change model from Troutman et al., implemented in netlogo.
 
-- State (current grammar state, ranges from 0 to 1)
+The model consists of a preferential attachment network, where each node represents a language user. There are two grammar variants, which are coded as 0 or 1.
 
-- Original state (initially assigned grammar state)
+Nodes have the following properties; state, original state, spoken state, age, gamma, and cohort.
+State represents the node's current grammar state, ranging from [0,1], which will influence their likelihood to use one of the two grammar variants. It can be understood as the bias towards a specific grammar (e.g., node with state of 0.25 would be biased towards Grammar 0).
+Original state represents their initially assigned grammar state.
+Spoken state represents the output of each node's speech, as (grammar) 0 or 1.
+The speaking process will be detailed in the *dynamics* section.
+Each node also has an age, that increases by 1 each tick, and a gamma value, which serves as their learning rate (step size).
+Higher gamma values (0.04) mean that the node will adjust their state more when listening, as opposed to a lower gamma (0.01).
+Each node also has a cohort or age group, which is either 1 or 2. This is fixed from the start.
 
-- Spoken state (output of each agent's speech, 0 or 1)
+For initialization, the model uses [**what implementation**] to generate the preferential attachment network with a specified number of nodes. **Comment from Troutman paper?**
+Grammar is distributed throughout the network based on the specified percentage of grammar 1.
 
-- Age (current age of an agent)
+Next, the gamma, age, and cohort attributes of the nodes are initialized.
+If gamma is deterministic, the gamma values for all of the nodes will be set to the specified value.
+If gamma is probabilistic, the gamma values will be generated using a normal distribution centered around the initial gamma value, with a specified standard deviation.
+If gamma is set to be based on age, it will be determined by the "learning curve". 
+The learning curve describes the (power law) relationship between age and learning rate, and is as follows:
 
-- Gamma (learning rate)
+$y = qc(x^{a})+b$
 
-- Cohort (group of the agent, 1 or 2)
+where $q$ indicates whether the learning rate increases ($+1$) or decreases ($-1$) with age ($x$). 
+The constant $c$ shrinks the function to the proper range, and is set to $c = 0.05$. 
+The variable $x$ is the normalized age of a given node, such that it is within [0,1].
+The variable $a$ represents the "cost" of learning, such that higher "costs" ($a=3$) indicate slow initial change which increases quickly when $x$ is closer to 1, and lower "costs" ($a=0.25$) indicate a quick initial change that slows down later on. 
+$b$ is the initial value for gamma.
+Graphs for the increasing and decreasing learning curves can be seen below:
+
+```{r gamma-plot, echo = F, fig.height = 3}
+gamma.function = function(a, b, age, constant){
+    return ( constant * (age^a) + b )
+}
+
+## Normal cost curve
+a.exp = 1
+initial.gamma = 0.005
+front.constant = 0.05
+
+normal.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# High cost 
+a.exp = 2
+
+high.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Higher cost 
+a.exp = 3
+
+higher.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Low cost 
+a.exp = 0.5
+
+low.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Lower cost 
+a.exp = 0.25
+
+lower.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+df1 <- normal.cost |> 
+    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
+    mutate(type = "Increasing (q = 1)")
+
+gamma.function = function(a, b, age, constant){
+    return ( constant * (-age^a) + b )
+}
+
+## A as cost!!!
+
+## Normal cost curve
+a.exp = 1
+initial.gamma = 0.055
+
+normal.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# High cost 
+a.exp = 2
+
+high.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Higher cost 
+a.exp = 3
+
+higher.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Low cost 
+a.exp = 0.5
+
+low.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Lower cost 
+a.exp = 0.25
+
+lower.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+df2 <- normal.cost |> 
+    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
+    mutate(type = "Decreasing (q = -1)")
+
+df1 |> 
+    rbind(df2) |> 
+    ggplot(aes(x = age, y = gamma, group = factor(a), color = factor(a)))+
+    # geom_point()+
+    geom_line(linewidth = 1)+
+    theme_bw()+
+    xlab("Proportional age (x)")+
+    ylab("Gamma parameter")+
+    scale_color_brewer(name = "Cost (a)", palette = 5)+
+    ggtitle("Learning curve", subtitle = "Relates a proportional age to a gamma value")+
+    facet_wrap(~type)
 
 
-Initialization:
+```
 
-- Preferential attachment network
-
-- Grammar is distributed throughout the network based on the specified percentage of grammar 1
-
-- Specify the number of cohorts
-
-- Cohorts are initialized, such that their ages are either deterministic (set to the specified age) or probabilistic (centered around the specified age, with a specified standard deviation)
-
-- Gamma is initialized, such that it is either deterministic (set to the specified gamma) or probabilistic (centered around the specified gamma, with a specified standard deviation)
-
+The number of cohorts is decided by specifying the percentage of Group 2.
+The cohorts are initialized such that their ages are either deterministic (set to the specified age) or probabilistic (centered around the specified age, with a specified standard deviation).
+When gamma is based on age, any variation in gamma will be determined by the setting of age distribution (deterministic or probabilistic), since they are generated from the learning curve.
 
 ## Dynamics
 
 Go procedure:
 
 - Communication
+
+    - Alpha parameter as bias in favor of grammar 1
 
 - Aging
 
@@ -103,194 +250,66 @@ Gamma modification:
 
 - Minimum gamma is 0; potential for some agents to stop learning
 
-```{r gamma-plot, echo = F}
-gamma.function = function(a, b, age, constant){
-    return ( constant * (age^a) + b )
-}
-
-## Normal cost curve
-a.exp = 1
-initial.gamma = 0.01
-increasing = 1
-front.constant = 0.05
-
-normal.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# High cost 
-a.exp = 2
-initial.gamma = 0.01
-increasing = 1
-front.constant = 0.05
-
-high.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Higher cost 
-a.exp = 3
-initial.gamma = 0.01
-increasing = 1
-front.constant = 0.05
-
-higher.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Low cost 
-a.exp = 0.5
-initial.gamma = 0.01
-increasing = 1
-front.constant = 0.05
-
-low.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Lower cost 
-a.exp = 0.25
-initial.gamma = 0.01
-increasing = 1
-front.constant = 0.05
-
-lower.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-normal.cost |> 
-    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
-    ggplot(aes(x = age, y = gamma, group = a, color = a))+
-    geom_point()+
-    geom_line()+
-    theme_bw()+
-    xlab("Proportional age")+
-    ylab("Gamma parameter")+
-    ggtitle("Learnability parameter changing with age, increasing")+
-    ylim(0, 0.07)
-
-```
 
 
 
-```{r gamma-plot-decreasing, echo = F}
-gamma.function = function(a, b, age, constant){
-    return ( constant * (-age^a) + b )
-}
-
-## A as cost!!!
-
-## Normal cost curve
-a.exp = 1
-initial.gamma = 0.05
-front.constant = 0.05
-
-normal.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# High cost 
-a.exp = 2
-front.constant = 0.05
-
-high.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Higher cost 
-a.exp = 3
-front.constant = 0.05
-
-higher.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Low cost 
-a.exp = 0.5
-front.constant = 0.05
-
-low.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Lower cost 
-a.exp = 0.25
-front.constant = 0.05
-
-lower.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-normal.cost |> 
-    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
-    ggplot(aes(x = age, y = gamma, group = a, color = a))+
-    geom_point()+
-    geom_line()+
-    theme_bw()+
-    xlab("Proportional age")+
-    ylab("Gamma parameter")+
-    ggtitle("Learnability parameter changing with age, decreasing")
-
-```
-
-
-```{r gamma-plot-sigmoid, echo = F}
-gamma.function = function(a, age, constant){
-    return ( constant / ( 1 + exp(-(2*age - 1)*10*a)  ))
-}
-
-## Normal cost curve
-a.exp = 1
-initial.gamma = 0.05
-front.constant = 0.05
-
-normal.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# High cost 
-a.exp = 2
-front.constant = 0.05
-
-high.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Higher cost 
-a.exp = 3
-front.constant = 0.05
-
-higher.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Low cost 
-a.exp = 0.5
-front.constant = 0.05
-
-low.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-# Lower cost 
-a.exp = 0.25
-front.constant = 0.05
-
-lower.cost <- data.frame(age = seq(0,1,0.1)) |> 
-    mutate(gamma = gamma.function(a.exp, age, front.constant),
-           a = a.exp, initial = initial.gamma, constant = front.constant)
-
-normal.cost |> 
-    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
-    ggplot(aes(x = age, y = gamma, group = a, color = a))+
-    geom_point()+
-    geom_line()+
-    theme_bw()+
-    xlab("Proportional age")+
-    ylab("Gamma parameter")+
-    ggtitle("Learnability parameter changing with age, sigmoid")
-
-```
+<!-- # ```{r gamma-plot-sigmoid, echo = F} -->
+<!-- # gamma.function = function(a, age, constant){ -->
+<!-- #     return ( constant / ( 1 + exp(-(2*age - 1)*10*a)  )) -->
+<!-- # } -->
+<!-- #  -->
+<!-- # ## Normal cost curve -->
+<!-- # a.exp = 1 -->
+<!-- # initial.gamma = 0.05 -->
+<!-- # front.constant = 0.05 -->
+<!-- #  -->
+<!-- # normal.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
+<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
+<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
+<!-- #  -->
+<!-- # # High cost  -->
+<!-- # a.exp = 2 -->
+<!-- # front.constant = 0.05 -->
+<!-- #  -->
+<!-- # high.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
+<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
+<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
+<!-- #  -->
+<!-- # # Higher cost  -->
+<!-- # a.exp = 3 -->
+<!-- # front.constant = 0.05 -->
+<!-- #  -->
+<!-- # higher.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
+<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
+<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
+<!-- #  -->
+<!-- # # Low cost  -->
+<!-- # a.exp = 0.5 -->
+<!-- # front.constant = 0.05 -->
+<!-- #  -->
+<!-- # low.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
+<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
+<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
+<!-- #  -->
+<!-- # # Lower cost  -->
+<!-- # a.exp = 0.25 -->
+<!-- # front.constant = 0.05 -->
+<!-- #  -->
+<!-- # lower.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
+<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
+<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
+<!-- #  -->
+<!-- # normal.cost |>  -->
+<!-- #     rbind(high.cost, higher.cost, low.cost, lower.cost) |>  -->
+<!-- #     ggplot(aes(x = age, y = gamma, group = a, color = a))+ -->
+<!-- #     geom_point()+ -->
+<!-- #     geom_line()+ -->
+<!-- #     theme_bw()+ -->
+<!-- #     xlab("Proportional age")+ -->
+<!-- #     ylab("Gamma parameter")+ -->
+<!-- #     ggtitle("Learnability parameter changing with age, sigmoid") -->
+<!-- #  -->
+<!-- # ``` -->
 
 Communication:
 
@@ -314,13 +333,15 @@ Communication:
 
 # Results
 
+<!-- Result patterns: s-shaped curve, intraspeaker variation, categorical norms, multi-stability, threshold problem -->
+<!-- Added: formation of dialect subgroups? -->
+<!-- Added: affect of gamma (learning rate), changing gamma with age, two age groups, preference for own group -->
+
 Influence of gamma with only one group:
 
 - Low vs high gamma
 
 - Probabilistic gamma
-
-- Gamma increasing/decreasing with age
 
 *Select a gamma parameter setting for second part.*
 

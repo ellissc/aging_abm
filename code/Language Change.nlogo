@@ -30,6 +30,10 @@ to setup
   create-network
   let init-max-age (max [age] of nodes)
   set max-age (simulation-limit + init-max-age)
+
+  if initial-gamma-based-on-age?
+  [ ask nodes [ gamma-by-age age gamma_____with-age ] ]
+
   repeat 100 [ layout ]
   reset-ticks
 end
@@ -53,6 +57,7 @@ to make-node
 
     ]
 
+
   ]
 end
 
@@ -64,7 +69,7 @@ to initialize-groups
 
   ask nodes [ initialize-age ]
 
-  ask nodes [update-shape]
+  ask nodes [ update-shape ]
 end
 
 to update-shape
@@ -134,22 +139,51 @@ end
 
 to grow-older [ growth-influence ]
   set age age + 1
-  modify-gamma age growth-influence
+  gamma-by-age age growth-influence
 end
 
-to modify-gamma [ age-param growth-influence ]
-  let linear-constant 0.001
-  let minimum-gamma 0
-  if (ticks mod 100 = 0)
-  [
-    ifelse (growth-influence = "increases")
-    [ set gamma gamma + linear-constant ]
-    [ if (growth-influence = "decreases")
-      [set gamma gamma - linear-constant ]
+to gamma-by-age [ age-param growth-influence ]
+  let a gamma-cost  ;; cost? of learning, when set to increase:
+                    ;; low a means initially learn quickly, high a
+                    ;; as exponential curve in learning rate
+
+  let direction 0   ;; direction of change, does gamma increase or decrease?
+
+  let b initial-gamma ;; b as the initial / lowest gamma
+
+  ifelse (growth-influence = "increases")
+  [ set direction 1
+    set b 0.01
+  ]
+  [ if (growth-influence = "decreases")
+    [ set direction -1
+      set b 0.04
     ]
   ]
-  if (gamma < minimum-gamma) [set gamma minimum-gamma]
+
+  let constant 0.05 ;; shrinks the function to the proper range
+
+
+  let age-prop (age-param / max-age)  ;; normalizes age between 0 and 1
+
+  let new-gamma ((constant * direction *(age-prop ^ a) ) + b)
+
+  set gamma new-gamma
 end
+
+;to modify-gamma-old [ growth-influence ]
+;  let linear-constant 0.001
+;  let minimum-gamma 0.0001
+;  if (ticks mod 100 = 0)
+;  [
+;    ifelse (growth-influence = "increases")
+;    [ set gamma gamma + linear-constant ]
+;    [ if (growth-influence = "decreases")
+;      [set gamma gamma - linear-constant ]
+;    ]
+;  ]
+;  if (gamma < minimum-gamma) [set gamma minimum-gamma]
+;end
 
 
 to reset-nodes
@@ -646,7 +680,7 @@ initial-gamma
 initial-gamma
 0.01
 0.04
-0.04
+0.02
 0.01
 1
 NIL
@@ -671,7 +705,7 @@ Distribution of node age
 NIL
 NIL
 0.0
-1000.0
+1350.0
 0.0
 10.0
 true
@@ -687,7 +721,7 @@ SWITCH
 627
 deterministic-gamma?
 deterministic-gamma?
-1
+0
 1
 -1000
 
@@ -722,7 +756,7 @@ true
 false
 "" ""
 PENS
-"default" 0.01 1 -16777216 true "" "histogram [gamma] of nodes"
+"default" 0.001 1 -16777216 true "" "histogram [gamma] of nodes"
 
 MONITOR
 300
@@ -746,10 +780,10 @@ TEXTBOX
 1
 
 CHOOSER
-7
-670
-184
-715
+9
+707
+186
+752
 gamma_____with-age
 gamma_____with-age
 "increases" "decreases" "is-constant"
@@ -791,11 +825,11 @@ percent-group2
 HORIZONTAL
 
 TEXTBOX
-470
-498
-570
-516
-Additions: AGE
+474
+499
+807
+518
+Additions: AGE                                  (1 as square, 2 as triangle)
 10
 0.0
 1
@@ -807,7 +841,7 @@ SWITCH
 585
 deterministic-age?
 deterministic-age?
-0
+1
 1
 -1000
 
@@ -820,7 +854,7 @@ group1-age
 group1-age
 0
 700
-50.0
+0.0
 50
 1
 NIL
@@ -835,7 +869,7 @@ group2-age
 group2-age
 0
 700
-350.0
+300.0
 50
 1
 NIL
@@ -857,15 +891,47 @@ NIL
 HORIZONTAL
 
 MONITOR
+674
+627
+742
 672
-664
-740
-710
 NIL
 max-age
 3
 1
 11
+
+SWITCH
+9
+668
+231
+702
+initial-gamma-based-on-age?
+initial-gamma-based-on-age?
+0
+1
+-1000
+
+MONITOR
+671
+679
+746
+725
+Mean age
+mean [age] of nodes
+3
+1
+11
+
+CHOOSER
+8
+760
+101
+806
+gamma-cost
+gamma-cost
+0.25 0.5 1 2 3
+4
 
 @#$#@#$#@
 ## WHAT IS IT?
