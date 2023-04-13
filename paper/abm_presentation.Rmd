@@ -1,0 +1,189 @@
+---
+title: "Teaching an old dog new tricks? Learning rates, aging, and language change"
+author: Ellis Cain
+date: April 2, 2023
+output:
+  beamer_presentation:
+    theme: "Frankfurt"
+    colortheme: "dolphin"
+    fonttheme: "structurebold"
+    fig_caption: False
+classoption: "aspectratio=169"
+bibliography: bibliography.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(tidyverse)
+library(wesanderson)
+library(patchwork)
+library(ggdist)
+library(reshape2)
+knitr::opts_knit$set(root.dir = here())
+library(ggrepel)
+```
+
+
+```{r data, include=FALSE}
+## Setup ----
+theme_set(theme_bw() + theme(text =  element_text(size = 14)))
+`%nin%` = Negate(`%in%`)
+
+## Read in the data ----
+```
+
+
+# Background literature
+
+## Something to set it up
+
+- Language change examples?
+
+- Language acquisition?
+
+## Language changes over time
+
+- Google Books corpus (5.2 mill books) from 1800-2000[^1]
+
+- Ran a "culturenomics" study through an n-gram corpus analysis
+
+- Quantified trends in lexical usage, grammatical patterns, and social usage
+
+[^1]: [@michelQuantitativeAnalysisCulture2011]
+
+## Language changes over time
+
+![Examples of changes in lexical usage over time]("ngram_fig")
+
+## Verb Bias figures
+
+- Verb bias figures
+
+## *How* does language change over time
+
+Types of lexical change[^2]:
+
+- Metaphor: *head* or *face*
+
+- Metonymy: *bureau* as cloth over a table
+
+- Inference: *since* from temporal to causal
+
+- Bleaching: *guys*
+
+- Narrowing / generalization
+
+[^2]: [@bybee2015language]
+
+## Mechanisms of language acquisition
+
+- Statistical learning
+
+- Propose but verify (hypothesis testing)
+
+- Structural inference
+
+\pause
+
+- Not exactly clear how these learning mechanisms may change over the lifespan, and how cognitive decline may impact executive functioning and learning.
+
+## Learning rates
+
+- MacMurray study: parallel learning, constant learning rate
+
+- Blachstein study? Changes over the lifetime?
+
+- Bryersbart study?
+
+## Shift to modeling
+
+- Previous models
+
+- Main points
+
+
+
+<!-- ## Age-related differences in lexico-semantic organization -->
+
+<!-- - Word association data has been used to explore the organization of our lexico-semantic space[^3] -->
+
+<!-- - Dubossarsky and colleagues[^4] analyzed lexical association networks -->
+
+<!-- - Found that the **organization** changes across the lifespan -->
+
+<!-- [^3]: [@dedeyneSmallWorldWords2019] -->
+<!-- [^4]: [@dubossarskyQuantifyingStructureFree2017] -->
+
+<!-- ## Age-related differences in lexico-semantic organization -->
+
+<!-- U-shaped developmental trajectory: -->
+
+<!-- Small and sparse $\rightarrow$ dense and well-connected $\rightarrow$ sparse with isolated nodes -->
+
+<!-- ![Networks across the lifespan]("dubossarsky_fig") -->
+
+<!-- ## Age-related differences in lexico-semantic processing -->
+
+<!-- - EEG has also been used to explore the temporal aspect of lexico-semantic processing [^5] -->
+
+<!-- - Previous study suggests that the neural signatures of predictive processing (increased frontal positivity) were reduced in older adults -->
+<!-- \pause -->
+<!-- - Aging may be related to changes in neural mechanisms of processing or the predictability among words/meanings -->
+
+<!-- [^5]:[@federmeierAgerelatedIndividualDifferences2010; @wlotkoPredictNotPredict2012] -->
+
+## Main research question
+
+Given that adults learn throughout their life and update their linguistic representations[^8], it is especially relevant to understand:
+\pause
+**How do changes in meaning across time impact our understanding of those words?**
+
+[^8]:[@brysbaert2014concreteness; @castro2021category; @ryskin2017verb]
+
+
+## Model description:
+
+- Overview
+
+- Assumptions
+
+## Agents/nodes
+
+- Properties
+
+## Initialization
+
+- See chart
+
+## Speaking
+
+- Explanation
+
+## Listening
+
+- Explanation
+
+## Modification: Gamma
+
+- Explanation
+
+- Modifications
+
+## Modification: Aging
+
+- Learning curve plot
+
+## Analysis 1
+
+## Analysis 2
+
+## Conclusions
+
+##
+
+Thank you.
+
+##
+
+## References
