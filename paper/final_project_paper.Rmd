@@ -221,7 +221,7 @@ df1 |>
     ggtitle("Learning curve", subtitle = "Relates a proportional age to a gamma value")+
     facet_wrap(~type)
 
-
+rm(high.cost, higher.cost, low.cost, normal.cost, lower.cost)
 ```
 
 The number of cohorts is decided by specifying the percentage of Group 2.
@@ -341,17 +341,127 @@ Influence of gamma with only one group:
 
 - Low vs high gamma
 
+```{r gamma-variations, echo = F}
+gvdf <- read_csv(here("code",
+                      "Language Change Varying Gamma Alpha Percent-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+
+ggplot(gvdf, aes(x = percent_grammar_1, y = mean_state_of_nodes,
+                 fill = factor(initial_gamma),
+                 group = factor(initial_gamma)))+
+    theme_bw()+
+    xlab("Initial percentage of Grammar 1")+
+    ylab("Mean state of nodes after 1000 steps")+
+    scale_fill_brewer(name = "Initial gamma", type = "qual",
+                       palette = 2)+    
+    facet_grid(alpha~initial_gamma)+
+    stat_summary(fun = mean, geom = "bar")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 8)
+
+# no difference?
+
+```
+
+```{r gamma-variations-alt, echo = F}
+lndf <- read_csv(here("code",
+                      "Language Change test-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                 color = factor(initial_gamma)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Initial gamma", type = "qual" ,
+                       palette = 2)+
+    theme_bw()+
+    facet_grid(percent_grammar_1~initial_gamma)
+
+# Gamma mainly impacts the speed of change
+
+# More variation at gamma = 0.03?
+
+# S-shaped change: Most pronounced with the lowest gamma, change happens most slowly
+# Intra speaker variation: All retain a period of inter-speaker variation
+# Categorical norms:
+# Multi-stability: Higher gammas allow for more stable equilibrium?
+# Threshold problem: higher learning lowers the threshold for grammar 1 to become dominant, even when there is not a bias in favor of grammar 1
+
+```
+
 - Probabilistic gamma
 
-*Select a gamma parameter setting for second part.*
+```{r gamma-probabilistic-alt, echo = F}
+lndf2 <- read_csv(here("code",
+                      "Language Change prob-gamma-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf2, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                 color = factor(initial_gamma)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Initial gamma", type = "qual" ,
+                       palette = 2)+
+    theme_bw()+
+    facet_grid(percent_grammar_1~initial_gamma)
+```
 
 
+Aging and gamma:
+
+```{r age-mod-gamma, echo = F}
+lndf3 <- read_csv(here("code",
+                      "Language Change age-mod-gamma-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf3, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                  color = factor(percent_grammar_1)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+                       palette = 3)+
+    theme_bw()+
+    facet_grid(~percent_grammar_1)
+```
+- Age varies:
+
+```{r age-vary-mod-gamma, echo = F}
+lndf4 <- read_csv(here("code",
+                      "Language Change age-vary-mod-gamma-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf4, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                  color = factor(percent_grammar_1)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+                       palette = 3)+
+    theme_bw()+
+    facet_grid(age_sd~percent_grammar_1)
+
+
+```
 
 Influence of two groups:
 
-- One group vs two groups
+```{r two-groups, echo = F}
 
-- Difference in ages
+lndf5 <- read_csv(here("code",
+                      "Language Change half-split-age-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf5, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                  color = factor(percent_grammar_1)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+                       palette = 3)+
+    theme_bw()+
+    facet_grid(age_sd~percent_grammar_1)
+
+```
+
 
 # Discussion
 
