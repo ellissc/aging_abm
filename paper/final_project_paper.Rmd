@@ -443,16 +443,33 @@ ggplot(lndf4, aes(x = step, y = mean_state_of_nodes, group = run_number,
 
 ```
 
-Influence of two groups:
-
-```{r two-groups, echo = F}
-
+```{r vary-growth-curve, echo = F}
 lndf5 <- read_csv(here("code",
-                      "Language Change half-split-age-table.csv"),
+                      "Language Change vary-growth-curve-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
 ggplot(lndf5, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                  color = factor(percent_grammar_1)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+                       palette = 3)+
+    theme_bw()+
+    facet_grid(gamma_with_age~percent_grammar_1)
+
+
+```
+
+Influence of two groups:
+
+```{r two-groups, echo = F}
+
+lndf6 <- read_csv(here("code",
+                      "Language Change half-split-age-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf6, aes(x = step, y = mean_state_of_nodes, group = run_number,
                   color = factor(percent_grammar_1)))+
     geom_line(alpha = 0.5)+
     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,

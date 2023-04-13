@@ -818,7 +818,7 @@ percent-group2
 percent-group2
 0
 100
-50.0
+0.0
 10
 1
 %
@@ -841,7 +841,7 @@ SWITCH
 585
 deterministic-age?
 deterministic-age?
-1
+0
 1
 -1000
 
@@ -854,7 +854,7 @@ group1-age
 group1-age
 0
 700
-30.0
+0.0
 50
 1
 NIL
@@ -884,7 +884,7 @@ age-sd
 age-sd
 0
 50
-20.0
+30.0
 10
 1
 NIL
@@ -1753,6 +1753,75 @@ NetLogo 6.3.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="deterministic-age?">
       <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="vary-growth-curve" repetitions="40" sequentialRunOrder="false" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="500"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="700"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;increases&quot;"/>
+      <value value="&quot;decreases&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-grammar-1">
+      <value value="20"/>
+      <value value="40"/>
+      <value value="45"/>
+      <value value="50"/>
+      <value value="60"/>
+      <value value="80"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="true"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
