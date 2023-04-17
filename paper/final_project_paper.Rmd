@@ -19,10 +19,7 @@ knitr::opts_knit$set(root.dir = here())
 
 # Abstract
 
-Language change can be understood as representing the dynamic relationship between group-level and individual usage patterns. 
-As statistical learners who are sensitive to the underlying distributional properties of language, when usage patterns vary across time, it would be expected that the language acquisition of different age groups will be impacted by the usage patterns they experience.
-While previous research has shown differences in the language representation and cognitive capabilities over the lifespan (i.e., early vocab spurt, late cognitive decline), the impact of varying learning rates on language change is not well understood.
-Using an agent-based model of (syntactic) language change, this project aims to explore the interaction between learning rates and aging may impact diachronic changes in usage patterns of language.
+Language change can be understood as representing the dynamic relationship between group-level and individual usage patterns. According to statistical learning, language learners are sensitive to the underlying distributional properties of language usage. Therefore, when usage patterns vary across time, it would be expected that the language acquisition of individuals will be impacted by the usage patterns that they experience during their lifetime. While previous research has shown differences in the language representation and cognitive capabilities over the lifespan (i.e., early vocab spurt, late cognitive decline), the impact of varying learning rates on language change is not well understood. Using an agent-based model of (syntactic) language change, this project aims to explore the interaction between learning rates and aging may impact diachronic changes in usage patterns of language.
 
 
 
@@ -358,7 +355,8 @@ ggplot(gvdf, aes(x = percent_grammar_1, y = mean_state_of_nodes,
                        palette = 2)+    
     facet_grid(alpha~initial_gamma)+
     stat_summary(fun = mean, geom = "bar")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 8)
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 8)+
+    ggtitle("Gamma vs alpha")
 
 # no difference?
 
@@ -376,7 +374,8 @@ ggplot(lndf, aes(x = step, y = mean_state_of_nodes, group = run_number,
     scale_color_brewer(name = "Initial gamma", type = "qual" ,
                        palette = 2)+
     theme_bw()+
-    facet_grid(percent_grammar_1~initial_gamma)
+    facet_grid(percent_grammar_1~initial_gamma)+
+    ggtitle("Deterministic gamma / learning rates")
 
 # Gamma mainly impacts the speed of change
 
@@ -404,7 +403,8 @@ ggplot(lndf2, aes(x = step, y = mean_state_of_nodes, group = run_number,
     scale_color_brewer(name = "Initial gamma", type = "qual" ,
                        palette = 2)+
     theme_bw()+
-    facet_grid(percent_grammar_1~initial_gamma)
+    facet_grid(percent_grammar_1~initial_gamma)+
+    ggtitle("Probabilistic gamma / learning rates")
 ```
 
 
@@ -422,7 +422,8 @@ ggplot(lndf3, aes(x = step, y = mean_state_of_nodes, group = run_number,
     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
                        palette = 3)+
     theme_bw()+
-    facet_grid(~percent_grammar_1)
+    facet_grid(~percent_grammar_1)+
+    ggtitle("Age (deterministic) modifies gamma / learning rate")
 ```
 - Age varies:
 
@@ -438,7 +439,8 @@ ggplot(lndf4, aes(x = step, y = mean_state_of_nodes, group = run_number,
     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
                        palette = 3)+
     theme_bw()+
-    facet_grid(age_sd~percent_grammar_1)
+    facet_grid(age_sd~percent_grammar_1)+
+    ggtitle("Age (probabilistic) modifies gamma / learning rate")
 
 
 ```
@@ -455,17 +457,17 @@ ggplot(lndf5, aes(x = step, y = mean_state_of_nodes, group = run_number,
     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
                        palette = 3)+
     theme_bw()+
-    facet_grid(gamma_with_age~percent_grammar_1)
+    facet_grid(gamma_with_age~percent_grammar_1)+
+    ggtitle("Growth curve type")
 
 
 ```
 
-Influence of two groups:
+Varied cost curve
 
-```{r two-groups, echo = F}
-
+```{r vary-growth-curve-cost, echo = F}
 lndf6 <- read_csv(here("code",
-                      "Language Change half-split-age-table.csv"),
+                      "Language Change vary-growth-curve-cost-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
@@ -475,10 +477,52 @@ ggplot(lndf6, aes(x = step, y = mean_state_of_nodes, group = run_number,
     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
                        palette = 3)+
     theme_bw()+
+    facet_grid(gamma_cost~percent_grammar_1)+
+    ggtitle("Varied growth curve cost", subtitle = "Increasing gamma only")
+
+
+```
+
+
+```{r vary-growth-curve-decreases, echo = F}
+lndf6.5 <- read_csv(here("code",
+                      "Language Change vary-growth-curve-decreases-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf6.5, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                  color = factor(percent_grammar_1)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+                       palette = 3)+
+    theme_bw()+
+    facet_grid(gamma_cost~percent_grammar_1)+
+    ggtitle("Varied growth curve cost", subtitle = "Decreasing gamma only")
+
+
+```
+Influence of two groups:
+
+```{r two-groups, echo = F}
+
+lndf7 <- read_csv(here("code",
+                      "Language Change half-split-age-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf7, aes(x = step, y = mean_state_of_nodes, group = run_number,
+                  color = factor(percent_grammar_1)))+
+    geom_line(alpha = 0.5)+
+    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+                       palette = 3)+
+    theme_bw()+
     facet_grid(age_sd~percent_grammar_1)
 
 ```
 
+
+**Measure: average steps to equilibrium?**
+**Emergence of dialect subgroups?**
 
 # Discussion
 
