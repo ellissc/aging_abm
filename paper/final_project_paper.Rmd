@@ -11,6 +11,7 @@ library(tidyverse)
 library(wesanderson)
 library(patchwork)
 library(ggdist)
+library(jtools)
 knitr::opts_knit$set(root.dir = here())
 ```
 
@@ -336,7 +337,9 @@ Communication:
 
 Influence of gamma with only one group:
 
-- Low vs high gamma
+Low vs high gamma:
+
+*Use this style of summary graph*
 
 ```{r gamma-variations, echo = F}
 gvdf <- read_csv(here("code",
@@ -346,36 +349,42 @@ gvdf <- read_csv(here("code",
 
 
 ggplot(gvdf, aes(x = percent_grammar_1, y = mean_state_of_nodes,
-                 fill = factor(initial_gamma),
+                 color = factor(initial_gamma),
                  group = factor(initial_gamma)))+
     theme_bw()+
     xlab("Initial percentage of Grammar 1")+
-    ylab("Mean state of nodes after 1000 steps")+
-    scale_fill_brewer(name = "Initial gamma", type = "qual",
-                       palette = 2)+    
-    facet_grid(alpha~initial_gamma)+
-    stat_summary(fun = mean, geom = "bar")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 8)+
-    ggtitle("Gamma vs alpha")
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    scale_color_brewer(name = "Initial gamma",# type = "qual",
+                       palette = 5)+    
+    facet_wrap(~alpha)+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ggtitle("Relationship between gamma and alpha (grammar 1 bias)")
 
 # no difference?
 
 ```
 
-```{r gamma-variations-alt, echo = F}
-lndf <- read_csv(here("code",
-                      "Language Change test-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
+Individual runs:
 
-ggplot(lndf, aes(x = step, y = mean_state_of_nodes, group = run_number,
-                 color = factor(initial_gamma)))+
-    geom_line(alpha = 0.5)+
-    scale_color_brewer(name = "Initial gamma", type = "qual" ,
-                       palette = 2)+
-    theme_bw()+
-    facet_grid(percent_grammar_1~initial_gamma)+
-    ggtitle("Deterministic gamma / learning rates")
+```{r gamma-variations-alt, echo = F}
+# lndf <- read_csv(here("code",
+#                       "Language Change test-table.csv"),
+#                  show_col_types = F, skip = 6) |> 
+#     janitor::clean_names()
+# 
+# ggplot(lndf, aes(x = step, y = mean_state_of_nodes, group = run_number,
+#                  color = factor(initial_gamma)))+
+#     geom_line(alpha = 0.5)+
+#     scale_color_brewer(name = "Initial gamma", type = "qual" ,
+#                        palette = 2)+
+#     theme_bw()+
+#     facet_grid(percent_grammar_1~initial_gamma)+
+#     ggtitle("Deterministic gamma / learning rates")+
+#     xlab("Step")+
+#     ylab("Mean state of nodes")
+print("holder")
 
 # Gamma mainly impacts the speed of change
 
@@ -389,22 +398,35 @@ ggplot(lndf, aes(x = step, y = mean_state_of_nodes, group = run_number,
 
 ```
 
-- Probabilistic gamma
+Probabilistic gamma:
 
 ```{r gamma-probabilistic-alt, echo = F}
 lndf2 <- read_csv(here("code",
-                      "Language Change prob-gamma-table.csv"),
+                      "Language Change prob-gamma-final-only-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
-ggplot(lndf2, aes(x = step, y = mean_state_of_nodes, group = run_number,
+# ggplot(lndf2, aes(x = step, y = mean_state_of_nodes, group = run_number,
+#                  color = factor(initial_gamma)))+
+#     geom_line(alpha = 0.5)+
+#     scale_color_brewer(name = "Initial gamma", type = "qual" ,
+#                        palette = 2)+
+#     theme_bw()+
+#     facet_grid(percent_grammar_1~initial_gamma)+
+#     ggtitle("Probabilistic gamma / learning rates")
+
+ggplot(lndf2, aes(x = percent_grammar_1, y = mean_state_of_nodes,
                  color = factor(initial_gamma)))+
-    geom_line(alpha = 0.5)+
-    scale_color_brewer(name = "Initial gamma", type = "qual" ,
-                       palette = 2)+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    xlab("Initial percentage of Grammar 1")+
+    scale_color_brewer(name = "Initial gamma",# type = "qual" ,
+                       palette = 5)+
     theme_bw()+
-    facet_grid(percent_grammar_1~initial_gamma)+
-    ggtitle("Probabilistic gamma / learning rates")
+    # facet_grid(percent_grammar_1~initial_gamma)+
+    ggtitle("Probabilistic gamma / learning rates", subtitle = "Gamma SD = 0.02, Grammar 1 bias = 0.005 (weak)")
 ```
 
 
@@ -412,53 +434,81 @@ Aging and gamma:
 
 ```{r age-mod-gamma, echo = F}
 lndf3 <- read_csv(here("code",
-                      "Language Change age-mod-gamma-table.csv"),
+                      "Language Change age-mod-gamma-final-only-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
-ggplot(lndf3, aes(x = step, y = mean_state_of_nodes, group = run_number,
-                  color = factor(percent_grammar_1)))+
-    geom_line(alpha = 0.5)+
+# ggplot(lndf3, aes(x = step, y = mean_state_of_nodes, group = run_number,
+#                   color = factor(percent_grammar_1)))+
+#     geom_line(alpha = 0.5)+
+#     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+#                        palette = 3)+
+#     theme_bw()+
+#     facet_grid(~percent_grammar_1)+
+#     ggtitle("Age (deterministic) modifies gamma / learning rate")
+
+ggplot(lndf3, aes(x = percent_grammar_1, y = mean_state_of_nodes))+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    xlab("Initial percentage of Grammar 1")+
     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
                        palette = 3)+
     theme_bw()+
-    facet_grid(~percent_grammar_1)+
-    ggtitle("Age (deterministic) modifies gamma / learning rate")
+    ggtitle("Gamma determined by age (deterministic)", subtitle  = "Linear positive relationship")
 ```
-- Age varies:
+
+
+Age varies:
 
 ```{r age-vary-mod-gamma, echo = F}
 lndf4 <- read_csv(here("code",
-                      "Language Change age-vary-mod-gamma-table.csv"),
+                      "Language Change age-vary-mod-gamma-final-only-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
-ggplot(lndf4, aes(x = step, y = mean_state_of_nodes, group = run_number,
-                  color = factor(percent_grammar_1)))+
-    geom_line(alpha = 0.5)+
-    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
-                       palette = 3)+
+# ggplot(lndf4, aes(x = step, y = mean_state_of_nodes, group = run_number,
+#                   color = factor(percent_grammar_1)))+
+#     geom_line(alpha = 0.5)+
+#     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+#                        palette = 3)+
+#     theme_bw()+
+#     facet_grid(age_sd~percent_grammar_1)+
+#     ggtitle("Age (probabilistic) modifies gamma / learning rate")
+
+ggplot(lndf4, aes(x = percent_grammar_1, y = mean_state_of_nodes, color = factor(age_sd)))+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    xlab("Initial percentage of Grammar 1")+
+    scale_color_brewer(name = "Age SD",# type = "qual" ,
+                       palette = 5)+
     theme_bw()+
-    facet_grid(age_sd~percent_grammar_1)+
-    ggtitle("Age (probabilistic) modifies gamma / learning rate")
+    # facet_wrap(~factor(age_sd))+
+    ggtitle("Gamma determined by age (probabilistic)", subtitle  = "Linear positive relationship")
 
 
 ```
 
 ```{r vary-growth-curve, echo = F}
 lndf5 <- read_csv(here("code",
-                      "Language Change vary-growth-curve-table.csv"),
+                      "Language Change vary-growth-curve-final-only-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
-ggplot(lndf5, aes(x = step, y = mean_state_of_nodes, group = run_number,
-                  color = factor(percent_grammar_1)))+
-    geom_line(alpha = 0.5)+
-    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+ggplot(lndf5, aes(x = percent_grammar_1, y = mean_state_of_nodes, color = gamma_with_age))+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    xlab("Initial percentage of Grammar 1")+
+    scale_color_brewer(name = "Relationship", type = "qual" ,
                        palette = 3)+
     theme_bw()+
-    facet_grid(gamma_with_age~percent_grammar_1)+
-    ggtitle("Growth curve type")
+    # facet_grid(~gamma_with_age)+
+    ggtitle("Growth curve type", subtitle = "Gamma increases/decreases with age")
 
 
 ```
@@ -467,58 +517,95 @@ Varied cost curve
 
 ```{r vary-growth-curve-cost, echo = F}
 lndf6 <- read_csv(here("code",
-                      "Language Change vary-growth-curve-cost-table.csv"),
+                      "Language Change vary-growth-curve-cost-final-only-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
-ggplot(lndf6, aes(x = step, y = mean_state_of_nodes, group = run_number,
-                  color = factor(percent_grammar_1)))+
-    geom_line(alpha = 0.5)+
-    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
-                       palette = 3)+
+ggplot(lndf6, aes(x = percent_grammar_1, y = mean_state_of_nodes,
+                  color = factor(gamma_cost)))+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    xlab("Initial percentage of Grammar 1")+
+    scale_color_brewer(name = "Gamma cost",# type = "qual" ,
+                       palette = 5)+
     theme_bw()+
-    facet_grid(gamma_cost~percent_grammar_1)+
-    ggtitle("Varied growth curve cost", subtitle = "Increasing gamma only")
+    facet_grid(gamma_with_age~.)+
+    ggtitle("Varied growth curve cost")
 
 
 ```
 
 
-```{r vary-growth-curve-decreases, echo = F}
-lndf6.5 <- read_csv(here("code",
-                      "Language Change vary-growth-curve-decreases-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
 
-ggplot(lndf6.5, aes(x = step, y = mean_state_of_nodes, group = run_number,
-                  color = factor(percent_grammar_1)))+
-    geom_line(alpha = 0.5)+
-    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
-                       palette = 3)+
-    theme_bw()+
-    facet_grid(gamma_cost~percent_grammar_1)+
-    ggtitle("Varied growth curve cost", subtitle = "Decreasing gamma only")
+<!-- ```{r vary-growth-curve-decreases, echo = F} -->
+<!-- lndf6.5 <- read_csv(here("code", -->
+<!--                       "Language Change vary-growth-curve-decreases-table.csv"), -->
+<!--                  show_col_types = F, skip = 6) |>  -->
+<!--     janitor::clean_names() -->
+
+<!-- ggplot(lndf6.5, aes(x = step, y = mean_state_of_nodes, group = run_number, -->
+<!--                   color = factor(percent_grammar_1)))+ -->
+<!--     geom_line(alpha = 0.5)+ -->
+<!--     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" , -->
+<!--                        palette = 3)+ -->
+<!--     theme_bw()+ -->
+<!--     facet_grid(gamma_cost~percent_grammar_1)+ -->
+<!--     ggtitle("Varied growth curve cost", subtitle = "Decreasing gamma only") -->
 
 
-```
+<!-- ``` -->
+
+
 Influence of two groups:
 
 ```{r two-groups, echo = F}
 
 lndf7 <- read_csv(here("code",
-                      "Language Change half-split-age-table.csv"),
+                      "Language Change half-split-age-final-only-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
 
-ggplot(lndf7, aes(x = step, y = mean_state_of_nodes, group = run_number,
-                  color = factor(percent_grammar_1)))+
-    geom_line(alpha = 0.5)+
-    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
+ggplot(lndf7, aes(x = percent_grammar_1, y = mean_state_of_nodes,
+                  color = factor(group2_age)))+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    xlab("Initial percentage of Grammar 1")+
+    scale_color_brewer(name = "Group 2 age", type = "qual" ,
                        palette = 3)+
     theme_bw()+
-    facet_grid(age_sd~percent_grammar_1)
+    facet_grid(percent_group2~.)+
+    ggtitle("Two age groups")
 
 ```
+
+Group preference:
+
+```{r cohort-preference, echo = F}
+
+lndf8 <- read_csv(here("code",
+                      "Language Change cohort-preference-final-only-table.csv"),
+                 show_col_types = F, skip = 6) |> 
+    janitor::clean_names()
+
+ggplot(lndf8, aes(x = percent_grammar_1, y = mean_state_of_nodes,
+                  color = factor(chance_listen_to_outgroup)))+
+    stat_summary(fun = mean, geom = "point")+
+    stat_summary(fun = mean, geom = "line")+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    ylab("Mean state of nodes\nafter 1000 steps")+
+    xlab("Initial percentage of Grammar 1")+
+    scale_color_brewer(name = "Chance to listen\nto outgroup", type = "div",
+                       palette = 3)+
+    theme_bw()+
+    facet_wrap(~percent_group2)+
+    ggtitle("Willingness to listen to outgroup", subtitle = "Faceted by group 2 percent")
+
+```
+
 
 
 **Measure: average steps to equilibrium?**

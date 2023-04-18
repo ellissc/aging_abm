@@ -1,7 +1,5 @@
 ;; TODO:
-;; Think about how age & gamma should be initialized, use the function to determine
-;;    gamma as opposed to setting it as a constant and modifying it?
-;; Implement different gamma modification curves
+;; Cohort preference: if cohort does not match, then there is a chance they won't listen/update
 
 globals [max-age]
 
@@ -229,7 +227,7 @@ to communicate-via [ algorithm ] ;; node procedure
       if (algorithm = "reward")
       [ speak
         ask link-neighbors
-        [ listen [spoken-state] of myself ]
+        [ listen [spoken-state] of myself [cohort] of myself ]
    ]]]
 end
 
@@ -274,24 +272,34 @@ to speak ;; node procedure
 end
 
 ;; Listening uses a linear reward/punish algorithm
-to listen [heard-state] ;; node procedure
+to listen [heard-state heard-cohort] ;; node procedure
 
   ;; Moved gamma to agents own
   ;; let gamma 0.01 ;; for now, gamma is the same for all nodes
 
+  let listen-chance 1
 
-  ;; choose a grammar state to be in
-  ifelse random-float 1.0 <= state
+  if heard-cohort != cohort ;; outgroup
+  [ if random-float 1.0 >= chance-listen-to-outgroup  ;; won't listen as (1-p)
+    [ set listen-chance 0]
+  ]
+
+  ;; if they will listen
+  if listen-chance = 1
   [
-    ;; if grammar 1 was heard
-    ifelse heard-state = 1
-    [ set state state + (gamma * (1 - state)) ] ;; reward: update, increase state
-    [ set state (1 - gamma) * state ]           ;; punish: update, decrease state
-  ][
-    ;; if grammar 0 was heard
-    ifelse heard-state = 0
-    [ set state state * (1 - gamma) ]           ;; reward: update, decrease state
-    [ set state gamma + state * (1 - gamma) ]   ;; punish: update, increase state
+    ;; choose a grammar state to be in
+    ifelse random-float 1.0 <= state
+    [
+      ;; if grammar 1 was heard
+      ifelse heard-state = 1
+      [ set state state + (gamma * (1 - state)) ] ;; reward: match, increase state
+      [ set state (1 - gamma) * state ]           ;; punish: mismatch, decrease state
+    ][
+      ;; if grammar 0 was heard
+      ifelse heard-state = 0
+      [ set state state * (1 - gamma) ]           ;; reward: match, decrease state
+      [ set state gamma + state * (1 - gamma) ]   ;; punish: mismatch, increase state
+    ]
   ]
 end
 
@@ -523,17 +531,17 @@ percent-grammar-1
 percent-grammar-1
 0
 100
-70.0
-1
+20.0
+10
 1
 %
 HORIZONTAL
 
 CHOOSER
 225
-150
+155
 365
-195
+200
 update-algorithm
 update-algorithm
 "individual" "threshold" "reward"
@@ -548,7 +556,7 @@ alpha
 alpha
 0
 0.05
-0.0
+0.005
 0.0050
 1
 NIL
@@ -646,9 +654,9 @@ Additions: GAMMA\n
 1
 
 SLIDER
-8
+5
 520
-181
+178
 553
 simulation-limit
 simulation-limit
@@ -661,10 +669,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-195
-509
-279
-554
+185
+510
+269
+555
 Mean state
 mean [state] of nodes
 3
@@ -672,24 +680,24 @@ mean [state] of nodes
 11
 
 SLIDER
-9
-556
-182
-589
+5
+555
+178
+588
 initial-gamma
 initial-gamma
 0.01
 0.04
-0.04
+0.01
 0.01
 1
 NIL
 HORIZONTAL
 
 TEXTBOX
-186
+185
 560
-294
+293
 594
 * Learning rate for reward algorithm
 10
@@ -697,10 +705,10 @@ TEXTBOX
 1
 
 PLOT
-468
-589
-668
-709
+465
+585
+660
+705
 Distribution of node age
 NIL
 NIL
@@ -715,10 +723,10 @@ PENS
 "default" 25.0 1 -16777216 true "" "histogram [age] of nodes"
 
 SWITCH
-8
-594
-184
-627
+5
+590
+181
+623
 deterministic-gamma?
 deterministic-gamma?
 0
@@ -726,10 +734,10 @@ deterministic-gamma?
 -1000
 
 SLIDER
-8
-632
-184
-665
+5
+625
+181
+658
 gamma-sd
 gamma-sd
 0
@@ -741,10 +749,10 @@ NIL
 HORIZONTAL
 
 PLOT
-300
-514
-460
-664
+290
+510
+450
+660
 Gamma distribution
 NIL
 NIL
@@ -759,10 +767,10 @@ PENS
 "default" 0.001 1 -16777216 true "" "histogram [gamma] of nodes"
 
 MONITOR
-300
-667
-402
-712
+290
+663
+392
+708
 Mean gamma
 mean [gamma] of nodes
 3
@@ -770,9 +778,9 @@ mean [gamma] of nodes
 11
 
 TEXTBOX
-187
+186
 634
-290
+289
 658
 * SD for gamma if not determinstic.\n
 10
@@ -780,14 +788,14 @@ TEXTBOX
 1
 
 CHOOSER
-9
-707
-186
-752
+5
+695
+135
+740
 gamma_____with-age
 gamma_____with-age
 "increases" "decreases" "is-constant"
-2
+0
 
 TEXTBOX
 374
@@ -800,9 +808,9 @@ Default settings for original parameters:\nreward, logistic, alpha = 0.005
 1
 
 TEXTBOX
-186
+185
 591
-301
+300
 642
 * if not deterministic,\nInitial-gamma serves as mean
 10
@@ -810,15 +818,15 @@ TEXTBOX
 1
 
 SLIDER
-467
-514
-639
-547
+465
+515
+637
+548
 percent-group2
 percent-group2
 0
 100
-0.0
+90.0
 10
 1
 %
@@ -835,10 +843,10 @@ Additions: AGE                                  (1 as square, 2 as triangle)
 1
 
 SWITCH
-468
-552
-640
-585
+465
+550
+637
+583
 deterministic-age?
 deterministic-age?
 0
@@ -846,55 +854,55 @@ deterministic-age?
 -1000
 
 SLIDER
-648
-514
-820
-547
+640
+515
+812
+548
 group1-age
 group1-age
 0
 700
-0.0
+50.0
 50
 1
 NIL
 HORIZONTAL
 
 SLIDER
-647
-552
-819
+640
+550
+812
+583
+group2-age
+group2-age
+0
+700
+200.0
+50
+1
+NIL
+HORIZONTAL
+
+SLIDER
+665
 585
-group2-age
-group2-age
-0
-700
-300.0
-50
-1
-NIL
-HORIZONTAL
-
-SLIDER
-672
-589
-819
-622
+812
+618
 age-sd
 age-sd
 0
 50
-30.0
+0.0
 10
 1
 NIL
 HORIZONTAL
 
 MONITOR
-674
-627
-742
-672
+665
+620
+733
+665
 NIL
 max-age
 3
@@ -902,21 +910,21 @@ max-age
 11
 
 SWITCH
-9
-668
-231
-701
+5
+660
+227
+693
 initial-gamma-based-on-age?
 initial-gamma-based-on-age?
-1
+0
 1
 -1000
 
 MONITOR
-671
-679
-746
-724
+735
+620
+810
+665
 Mean age
 mean [age] of nodes
 3
@@ -924,14 +932,29 @@ mean [age] of nodes
 11
 
 CHOOSER
-8
-760
-101
-805
+140
+695
+232
+740
 gamma-cost
 gamma-cost
 0.25 0.5 1 2 3
 2
+
+SLIDER
+465
+710
+655
+743
+chance-listen-to-outgroup
+chance-listen-to-outgroup
+0.1
+1
+0.9
+0.1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -1960,6 +1983,467 @@ NetLogo 6.3.0
     <enumeratedValueSet variable="deterministic-age?">
       <value value="true"/>
     </enumeratedValueSet>
+  </experiment>
+  <experiment name="prob-gamma-final-only" repetitions="50" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;is-constant&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="percent-grammar-1" first="10" step="10" last="90"/>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+      <value value="0.02"/>
+      <value value="0.03"/>
+      <value value="0.04"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="age-mod-gamma-final-only" repetitions="50" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;increases&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="percent-grammar-1" first="10" step="10" last="90"/>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="age-vary-mod-gamma-final-only" repetitions="50" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="0"/>
+      <value value="10"/>
+      <value value="20"/>
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;increases&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="percent-grammar-1" first="10" step="10" last="90"/>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="half-split-age-final-only" repetitions="50" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;increases&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="100"/>
+      <value value="200"/>
+      <value value="300"/>
+      <value value="400"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="percent-grammar-1" first="10" step="10" last="90"/>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="25"/>
+      <value value="50"/>
+      <value value="75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="vary-growth-curve-final-only" repetitions="50" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;increases&quot;"/>
+      <value value="&quot;decreases&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="percent-grammar-1" first="10" step="10" last="90"/>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="vary-growth-curve-cost-final-only" repetitions="50" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;increases&quot;"/>
+      <value value="&quot;decreases&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="0.25"/>
+      <value value="0.5"/>
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="percent-grammar-1" first="10" step="10" last="90"/>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="cohort-preference-final-only" repetitions="50" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean [state] of nodes</metric>
+    <enumeratedValueSet variable="simulation-limit">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="age-sd">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma-based-on-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sink-state-1?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold-val">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="logistic?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma_____with-age">
+      <value value="&quot;increases&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-sd">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group2-age">
+      <value value="200"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-algorithm">
+      <value value="&quot;reward&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="group1-age">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-nodes">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="gamma-cost">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-grammar-1">
+      <value value="10"/>
+      <value value="20"/>
+      <value value="30"/>
+      <value value="35"/>
+      <value value="40"/>
+      <value value="45"/>
+      <value value="50"/>
+      <value value="60"/>
+      <value value="70"/>
+      <value value="80"/>
+      <value value="90"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-gamma?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percent-group2">
+      <value value="10"/>
+      <value value="25"/>
+      <value value="50"/>
+      <value value="75"/>
+      <value value="90"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-gamma">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deterministic-age?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="chance-listen-to-outgroup" first="0.1" step="0.2" last="1"/>
   </experiment>
 </experiments>
 @#$#@#$#@
