@@ -115,6 +115,8 @@ The variable $a$ represents the "cost" of learning, such that higher "costs" ($a
 $b$ is the initial value for gamma.
 Graphs for the increasing and decreasing learning curves can be seen below:
 
+**TO UPDATE: Growth curve, just decreasing now.**
+
 ```{r gamma-plot, echo = F, fig.height = 3}
 gamma.function = function(a, b, age, constant){
     return ( constant * (age^a) + b )
@@ -207,17 +209,16 @@ df2 <- normal.cost |>
     rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
     mutate(type = "Decreasing (q = -1)")
 
-df1 |> 
-    rbind(df2) |> 
+df2 |> 
+    # rbind(df2) |> 
     ggplot(aes(x = age, y = gamma, group = factor(a), color = factor(a)))+
     # geom_point()+
     geom_line(linewidth = 1)+
     theme_bw()+
     xlab("Proportional age (x)")+
-    ylab("Gamma parameter")+
-    scale_color_brewer(name = "Cost (a)", palette = 5)+
-    ggtitle("Learning curve", subtitle = "Relates a proportional age to a gamma value")+
-    facet_wrap(~type)
+    ylab("Gamma")+
+    scale_color_brewer(name = "Perseverance (a)", palette = 5)+
+    ggtitle("Learning curve")
 
 rm(high.cost, higher.cost, low.cost, normal.cost, lower.cost)
 ```
@@ -233,6 +234,7 @@ Go procedure:
 - Communication
 
     - Alpha parameter as bias in favor of grammar 1
+    - In these analyses, Alpha will be set to 0. No bias for grammar 1.
 
 - Aging
 
@@ -342,59 +344,38 @@ Low vs high gamma:
 *Use this style of summary graph*
 
 ```{r gamma-variations, echo = F}
-gvdf <- read_csv(here("code",
-                      "Language Change Varying Gamma Alpha Percent-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
+gvdf <- read_csv(here("paper",
+                      "processed_data",
+                      "gvdf_final-only.csv"),
+                 show_col_types = F)
 
 
-ggplot(gvdf, aes(x = percent_grammar_1, y = mean_state_of_nodes,
+ggplot(gvdf,
+       aes(x = percent_grammar_1, y = mean_state_of_nodes,
                  color = factor(initial_gamma),
                  group = factor(initial_gamma)))+
     theme_bw()+
     xlab("Initial percentage of Grammar 1")+
     ylab("Mean state of nodes\nafter 1000 steps")+
     scale_color_brewer(name = "Initial gamma",# type = "qual",
-                       palette = 5)+    
-    facet_wrap(~alpha)+
+                       palette = 5)+ 
     stat_summary(fun = mean, geom = "point")+
     stat_summary(fun = mean, geom = "line")+
     stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ggtitle("Relationship between gamma and alpha (grammar 1 bias)")
+    ggtitle("Impact of Gamma on final state")+
+    geom_text(aes(x = 80, y = 0.9, label = "Grammar 1\nas majority"))+
+    geom_text(aes(x = 15, y = 0.1, label = "Grammar 0\nas majority"))
 
 # no difference?
+
 
 ```
 
 Individual runs:
 
 ```{r gamma-variations-alt, echo = F}
-# lndf <- read_csv(here("code",
-#                       "Language Change test-table.csv"),
-#                  show_col_types = F, skip = 6) |> 
-#     janitor::clean_names()
-# 
-# ggplot(lndf, aes(x = step, y = mean_state_of_nodes, group = run_number,
-#                  color = factor(initial_gamma)))+
-#     geom_line(alpha = 0.5)+
-#     scale_color_brewer(name = "Initial gamma", type = "qual" ,
-#                        palette = 2)+
-#     theme_bw()+
-#     facet_grid(percent_grammar_1~initial_gamma)+
-#     ggtitle("Deterministic gamma / learning rates")+
-#     xlab("Step")+
-#     ylab("Mean state of nodes")
-print("holder")
 
-# Gamma mainly impacts the speed of change
 
-# More variation at gamma = 0.03?
-
-# S-shaped change: Most pronounced with the lowest gamma, change happens most slowly
-# Intra speaker variation: All retain a period of inter-speaker variation
-# Categorical norms:
-# Multi-stability: Higher gammas allow for more stable equilibrium?
-# Threshold problem: higher learning lowers the threshold for grammar 1 to become dominant, even when there is not a bias in favor of grammar 1
 
 ```
 
@@ -405,6 +386,7 @@ lndf2 <- read_csv(here("code",
                       "Language Change prob-gamma-final-only-table.csv"),
                  show_col_types = F, skip = 6) |> 
     janitor::clean_names()
+## TO UPDATE
 
 # ggplot(lndf2, aes(x = step, y = mean_state_of_nodes, group = run_number,
 #                  color = factor(initial_gamma)))+
@@ -608,8 +590,8 @@ ggplot(lndf8, aes(x = percent_grammar_1, y = mean_state_of_nodes,
 
 
 
-**Measure: average steps to equilibrium?**
-**Emergence of dialect subgroups?**
+**Other things to consider: Time to equilibrium, emergence of dialect subgroups**
+**Growth curve cost?**
 
 # Discussion
 

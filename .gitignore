@@ -1,3 +1,5 @@
 NetLogo 6.3.0
 *.tmp*
-
+*/.DS_Store
+code/*.csv
+.DS_Store

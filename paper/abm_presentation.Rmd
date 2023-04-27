@@ -1,7 +1,7 @@
 ---
 title: "Teaching an old dog new tricks? Learning rates, aging, and language change"
 author: Ellis Cain
-date: April 2, 2023
+date: May 2, 2023
 output:
   beamer_presentation:
     theme: "Frankfurt"
@@ -13,7 +13,7 @@ bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.align="center")
 library(here)
 library(tidyverse)
 library(wesanderson)
@@ -22,6 +22,7 @@ library(ggdist)
 library(reshape2)
 knitr::opts_knit$set(root.dir = here())
 library(ggrepel)
+library(jtools)
 ```
 
 
@@ -29,20 +30,12 @@ library(ggrepel)
 ## Setup ----
 theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 `%nin%` = Negate(`%in%`)
-
-## Read in the data ----
 ```
 
 
 # Background literature
 
-## Something to set it up
-
-- Language change examples?
-
-- Language acquisition?
-
-## Language changes over time
+## Collective patterns of language usage change over time
 
 - Google Books corpus (5.2 mill books) from 1800-2000[^1]
 
@@ -52,41 +45,22 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 
 [^1]: [@michelQuantitativeAnalysisCulture2011]
 
-## Language changes over time
+## Collective patterns of language usage change over time
 
-![Examples of changes in lexical usage over time]("ngram_fig")
-
-## Verb Bias figures
-
-- Verb bias figures
-
-## *How* does language change over time
-
-Types of lexical change[^2]:
-
-- Metaphor: *head* or *face*
-
-- Metonymy: *bureau* as cloth over a table
-
-- Inference: *since* from temporal to causal
-
-- Bleaching: *guys*
-
-- Narrowing / generalization
-
-[^2]: [@bybee2015language]
+\centering
+![Examples of changes in lexical usage over time]("ngram_grammar_fig"){width=50%}
 
 ## Mechanisms of language acquisition
 
-- Statistical learning
+- Statistical learning[^2]
 
-- Propose but verify (hypothesis testing)
+- Propose but verify (hypothesis testing)[^3]
 
-- Structural inference
+- Structural inference[^4]
 
-\pause
-
-- Not exactly clear how these learning mechanisms may change over the lifespan, and how cognitive decline may impact executive functioning and learning.
+[^2]: Chen
+[^3]: Trueswell
+[^4]: Something?
 
 ## Learning rates
 
@@ -95,13 +69,6 @@ Types of lexical change[^2]:
 - Blachstein study? Changes over the lifetime?
 
 - Bryersbart study?
-
-## Shift to modeling
-
-- Previous models
-
-- Main points
-
 
 
 <!-- ## Age-related differences in lexico-semantic organization -->
@@ -133,50 +100,642 @@ Types of lexical change[^2]:
 
 <!-- [^5]:[@federmeierAgerelatedIndividualDifferences2010; @wlotkoPredictNotPredict2012] -->
 
-## Main research question
+<!-- ## Main research question -->
 
-Given that adults learn throughout their life and update their linguistic representations[^8], it is especially relevant to understand:
+<!-- Language changes over time: interactions between the individuals and collective level dynamics. As individuals age, their ability to learn may be affected by cognitive decline. -->
+
+<!-- How do learning rates and aging impact collective-level trends in language change? -->
+
+# Formal model
+
+## Overview
+
+- Language change as interaction between individual and collective level dynamics
+
+- Aim to explore how individual learning rates, aging, and group membership impact overall population-level patterns of language change
+
 \pause
-**How do changes in meaning across time impact our understanding of those words?**
 
-[^8]:[@brysbaert2014concreteness; @castro2021category; @ryskin2017verb]
+- Model of the usage and spread of a grammatical variant throughout a population
+
+    - Past tense ending can be "-t" or "-ed", such as in "burnt" or "burned"
+    
+\centering
+!["Burnt"]("ngram_burnt"){width=30%}
+    
+## Model assumptions[^5]
+
+1. Language learning is based on imitating others, though this may change over the lifespan
+
+    - E.g., individuals may learn quickly early on, but slow down as they age
+    
+\pause
+
+2. There are variations in preference between individuals
+
+    - E.g., some individuals learn more quickly than others
+    
+\pause
+
+3. Language can be influenced by external factors
+
+    - E.g., more willing to learn from in-group members
+    
+[^5]:Beeksma citation
+
+## Outcome patterns[^6]
+
+1. **S-shaped curve in usage patterns**: Change happens slowly, then proceeds rapidly before slowing down again.
+
+2. **Intra-speaker variation**: Change is gradual and there is a period of intra-speaker variation.
+
+3. **Categorical norms**: With competition, speakers move toward categorically using just one of the competing variants.
+
+4. **Multi-stability**: Language change can have multiple stable outcomes. *May result in dialect subgroups*
+
+5. **Threshold problem**: Initially rare variants may manage to spread through entire speech communities.
+
+[^6]: Troutman citation
 
 
-## Model description:
+## Initialization: network
 
-- Overview
+- Generates preferential attachment network
 
-- Assumptions
+- Distributes grammar according to specified percentage of grammar 1
 
-## Agents/nodes
+    - Two grammar variants, 0 or 1 (*burnt or burned*)
 
-- Properties
+\centering
+![]("example_network"){width=35%}
 
-## Initialization
+## Initialization: nodes
 
-- See chart
+Represent language users
 
-## Speaking
+- State: node's current grammar preference, initialized as 0 or 1
 
-- Explanation
+- Age
 
-## Listening
+    - Probablistic or deterministic
 
-- Explanation
+- Cohort: "Age group", *either 1 or 2*
 
-## Modification: Gamma
+- Gamma: learning rate of a given node
 
-- Explanation
+     - Probablistic, deterministic, or based on age
 
-- Modifications
+## Initialization: cohorts
 
-## Modification: Aging
+- Number of cohorts (max 2) based on specified percentage
 
-- Learning curve plot
+- Cohort ages can be specified
 
-## Analysis 1
+- Option for cohort-based grammar, such that the cohorts start with different percentages of grammar 1
 
-## Analysis 2
+- Willingness to listen to out-group members
+
+## Dynamics
+
+- Communication
+
+    - Speaking (not synchronous)
+    
+    - Neighboring agents listen
+
+- Aging
+
+## Dynamics: Speaking
+
+- Nodes will generate an 'utterance', which is either 0 or 1 (*burnt or burned*)
+
+- Nodes 'prefer' a discrete grammar
+
+- Logistic curve is used when nodes produce an utterance
+
+\centering
+![]("troutman_fig6"){width=40%}
+
+## Dynamics: Listening
+
+- Neighboring nodes will pick a grammar that will be used to interpret heard utterance
+
+- If it matches the heard utterance
+
+    - Update listener's state towards the heard state
+    
+    - Otherwise, it will update listener's state away from the heard state
+    
+    - Learning rate: *Gamma parameter modifies the step size*
+    
+- *Chance to ignore out-group*
+
+## Dynamics: Aging
+
+- Nodes age with each tick
+
+- Gamma changes with age: either constant or decreasing with age
+
+\pause
+
+- Perseverance: how slowly gamma decays
+
+    - Basic power law: $y = -0.05(x^{a})+0.005$
+    
+```{r gamma-plot, echo = F, fig.height = 2, fig.width = 4}
+gamma.function = function(a, b, age, constant){
+    return ( constant * (age^a) + b )
+}
+
+## Normal cost curve
+a.exp = 1
+initial.gamma = 0.005
+front.constant = 0.05
+
+normal.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# High cost 
+a.exp = 2
+
+high.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Higher cost 
+a.exp = 3
+
+higher.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Low cost 
+a.exp = 0.5
+
+low.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Lower cost 
+a.exp = 0.25
+
+lower.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+df1 <- normal.cost |> 
+    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
+    mutate(type = "Increasing (q = 1)")
+
+gamma.function = function(a, b, age, constant){
+    return ( constant * (-age^a) + b )
+}
+
+## A as cost!!!
+
+## Normal cost curve
+a.exp = 1
+initial.gamma = 0.055
+
+normal.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# High cost 
+a.exp = 2
+
+high.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Higher cost 
+a.exp = 3
+
+higher.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Low cost 
+a.exp = 0.5
+
+low.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+# Lower cost 
+a.exp = 0.25
+
+lower.cost <- data.frame(age = seq(0,1,0.01)) |> 
+    mutate(gamma = gamma.function(a.exp, initial.gamma, age, front.constant),
+           a = a.exp, initial = initial.gamma, constant = front.constant)
+
+df2 <- normal.cost |> 
+    rbind(high.cost, higher.cost, low.cost, lower.cost) |> 
+    mutate(type = "Decreasing (q = -1)")
+
+df2 |> 
+    # rbind(df2) |> 
+    ggplot(aes(x = age, y = gamma, group = factor(a), color = factor(a)))+
+    # geom_point()+
+    geom_line(linewidth = 1)+
+    theme_bw()+
+    xlab("Proportional age (x)")+
+    ylab("Gamma")+
+    scale_color_brewer(name = "Perseverance (a)", palette = 5)
+
+rm(high.cost, higher.cost, low.cost, normal.cost, lower.cost)
+```
+
+# Results
+
+## Impact of learning rate
+
+```{r iolr_data_import, echo = F}
+gvdf_proc <- read_csv(here("paper","processed_data","gvdf_proc.csv"), show_col_types = F)
+gvdf <- read_csv(here("paper","processed_data","gvdf_final-only.csv"), show_col_types = F)
+
+
+```
+
+
+```{r plot1.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
+ggplot(gvdf,
+       aes(x = percent_grammar_1, y = mean_state_of_nodes,
+           color = factor(initial_gamma),
+           group = factor(initial_gamma)))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Initial gamma",# type = "qual",
+                     palette = 5)+ 
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  geom_text(aes(x = 80, y = 0.8), label = "Grammar 1\nas majority", color = "black")+
+  geom_text(aes(x = 15, y = 0.2), label = "Grammar 0\nas majority", color = "black")+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")
+```
+
+## Impact of learning rate
+
+```{r plot1.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
+                      group = factor(initial_gamma)))+
+  xlab("Initial gamma")+
+  ylab("Equilibrium reached (%)")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", fill = "lightblue", color = "black")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.001)+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")
+```
+
+
+## Variation of learning rate amongst individual 
+
+```{r volrai_data_import, echo = F}
+lndf2_proc <- read_csv(here("paper","processed_data","lndf2_proc.csv"), show_col_types = F)
+lndf2 <- read_csv(here("paper","processed_data","lndf2_final-only.csv"), show_col_types = F)
+```
+
+```{r plot2.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
+ggplot(lndf2,
+       aes(x = percent_grammar_1, y = mean_state_of_nodes,
+           color = factor(initial_gamma),
+           group = factor(initial_gamma)))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Initial gamma",# type = "qual",
+                     palette = 5)+ 
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  labs(caption = "Faceted by Gamma SD; 50 runs per configuration, 1000 steps total per run")+
+  facet_wrap(~gamma_sd)
+```
+
+## Variation of learning rate amongst individual 
+
+```{r plot2.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(lndf2_proc, aes(x = initial_gamma, y = eq_percent,
+                      group = factor(initial_gamma)))+
+  xlab("Initial gamma")+
+  ylab("Equilibrium reached (%)")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", fill = "lightgreen", color = "black")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.001)+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  facet_wrap(~gamma_sd)
+```
+
+## Checkpoint
+
+- Increased gamma decrease time to equilibrium, but not (systematically) affect the final outcome
+
+
+## Decrease in learning rate with age
+
+```{r dilrwa_data_import, echo = F}
+lndf3_proc <- read_csv(here("paper","processed_data","lndf3_proc.csv"), show_col_types = F)
+det_age <- read_csv(here("paper","processed_data","lndf3_final-only.csv"), show_col_types = F)
+```
+
+```{r plot3.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
+det_age |> 
+  ggplot(aes(x = percent_grammar_1, y = mean_state_of_nodes,
+             color = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)")),
+             group = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)"))))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Age type", type = "qual",
+                     palette = 2)+
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")
+```
+
+## Decrease in learning rate with age
+
+```{r plot3.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+lndf3_proc <- lndf3_proc |> 
+  mutate(graph_group = if_else(deterministic_age == T,
+                               "Deterministic",
+                               if_else(deterministic_age == F & age_sd == 30,
+                                       "Probabilistic (SD = 30)",
+                                       if_else(deterministic_age == F & age_sd == 50,
+                                               "Probabilistic (SD = 50)",
+                                               if_else(deterministic_age == F & age_sd == 100,
+                                                       "Probabilistic (SD = 100)",
+                                                       "N/A")))))
+
+ggplot(lndf3_proc, aes(x = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)")),
+                       y = eq_percent))+
+  xlab("Deterministic age?")+
+  ylab("Equilibrium reached (%)")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", fill = "darkgreen", color = "black")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")
+```
+
+## Variation of speed of decrease (perseverance)
+
+```{r vosodp_data_import, echo = F}
+vgp_proc <- read_csv(here("paper","processed_data","vgp_proc.csv"), show_col_types = F)
+vgp <- read_csv(here("paper","processed_data","vgp_final-only.csv"), show_col_types = F)
+```
+
+```{r plot4.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
+ggplot(vgp,
+       aes(x = percent_grammar_1, y = mean_state_of_nodes,
+           color = factor(perseverance),
+           group = factor(perseverance)))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Perseverance",# type = "qual",
+                     palette = 5)+ 
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")
+
+```
+
+## Variation of speed of decrease (perseverance)
+
+```{r plot4.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(vgp_proc, aes(x = factor(perseverance), y = eq_percent,
+                       group = factor(perseverance)))+
+  xlab("Perseverance of learning")+
+  ylab("Equilibrium reached")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", fill = "turquoise", color = "black")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")
+```
+
+## Checkpoint
+
+- Gamma impacts time to equilibrium (TTE)
+
+- No difference in TTE when perseverance is > 0.5
+
+## Two age cohorts
+
+```{r tac_data_import, echo = F}
+tcg_proc <- read_csv(here("paper","processed_data","tcg_proc.csv"), show_col_types = F)
+tcg_group_proc <- read_csv(here("paper","processed_data","tcg_group_proc.csv"), show_col_types = F)
+tcg <- read_csv(here("paper","processed_data","tcg_final-only.csv"), show_col_types = F)
+tcg_group <- read_csv(here("paper","processed_data","tcg_final-only-by-cohort.csv"), show_col_types = F)
+```
+
+```{r plot5.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
+ggplot(tcg |> 
+         filter(step == 1000),
+       aes(x = percent_grammar_1, y = mean_state_of_nodes,
+           color = factor(percent_cohort2),
+           group = factor(percent_cohort2)))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Cohort 2 percent",# type = "qual",
+                     palette = 5)+ 
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  labs(caption = "Faceted by Cohort 2 age; 50 runs per configuration, 1000 steps total per run")+
+  facet_grid(~cohort2_age)
+```
+
+
+## Two age cohorts
+
+```{r plot5.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(tcg_proc, aes(x = factor(percent_cohort2), y = eq_percent,
+                     fill = factor(cohort2_age),
+                     group = factor(percent_cohort2)))+
+  xlab("Cohort 2 percentage")+
+  ylab("Equilibrium reached")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", color = "black")+
+  scale_fill_brewer(name = "Group 2 age", type = "qual",
+                     palette = 1)+ 
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
+  labs(caption = "Faceted by cohort 2 age; 50 runs per configuration, 1000 steps total per run")+
+  theme(legend.position = "none")+
+  facet_grid(~cohort2_age)
+```
+
+## Two age cohorts: group equilibria
+
+```{r plot5.3, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
+tcg |> 
+  filter(step == 1000) |> 
+  select(c(percent_grammar_1, percent_cohort2, 
+           cohort2_age, cohort1_state, cohort2_state)) |> 
+  pivot_longer(cols = c(cohort1_state, cohort2_state), 
+               values_to = "mean_state_of_nodes") |> 
+  mutate(name = if_else(name == "cohort1_state", "Cohort 1", "Cohort 2")) |> 
+  ggplot(aes(x = percent_grammar_1, y = mean_state_of_nodes,
+           color = factor(percent_cohort2),
+           group = factor(percent_cohort2)))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Group 2 percent",# type = "qual",
+                     palette = 5)+ 
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  facet_grid(name~cohort2_age)
+```
+
+## Two age cohorts: group equilibria
+
+```{r plot5.4, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(tcg_group_proc |> 
+         mutate(type = if_else(type == "cohort1_equilibrium", "Cohort 1", "Cohort 2")) ,
+       aes(x = factor(percent_cohort2), y = eq_percent,
+                     fill = factor(cohort2_age),
+                     group = factor(percent_cohort2)))+
+  xlab("Cohort 2 percentage")+
+  ylab("Equilibrium reached")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", color = "black")+
+  scale_fill_brewer(name = "Group 2 age", type = "qual",
+                    palette = 1)+ 
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
+  labs(caption = "Faceted by cohort 2 age; 50 runs per configuration, 1000 steps total per run")+
+  facet_grid(type~cohort2_age)+
+  theme(legend.position = "none")
+```
+
+## Checkpoint
+
+- Gamma impacts time to equilibrium (TTE)
+
+- No difference in TTE when perseverance is > 0.5
+
+- Older cohort slows down TTE
+
+- As the age gap increases, the impact on TTE increases as well
+
+
+
+## Cohort-based grammar: Only Cohort 2 has grammar 1
+
+```{r dioc_data_import, echo = F}
+vgg_g1v <- read_csv(here("paper","processed_data","vgg_types_group1_variation.csv"), show_col_types = F)
+vgg_g2v <- read_csv(here("paper","processed_data","vgg_types_group2_variation.csv"), show_col_types = F)
+```
+
+```{r plot6.1, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 8}
+ggplot(vgg_g2v, aes(x = type, y = final_state, group = type, fill = type, color = type))+
+  xlab("Type")+
+  ylab("Mean state")+
+  theme_bw()+
+  geom_violin()+
+  # geom_density()+
+  # geom_bar(stat = "bin", bins = 10, position = position_dodge())+
+  labs(caption = "Gamma decreases at constant rate; Cohort 1 does not have grammar 1; 50% Cohort 2; 50 runs per configuration, 1000 steps total per run")+
+  facet_grid(~c2_percent_grammar_1)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(size = 6))
+```
+
+
+
+## Cohort-based grammar: Only Cohort 1 has grammar 1
+
+```{r plot6.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 8}
+ggplot(vgg_g1v, aes(x = type, y = final_state, group = type, fill = type, color = type))+
+  xlab("Equilibrium reached")+
+  theme_bw()+
+  geom_violin()+
+  # geom_density()+
+  # geom_bar(stat = "bin", bins = 10, position = position_dodge())+
+  labs(caption = "Gamma decreases at constant rate; Cohort 2 does not have grammar 1; 50% Cohort 2; 50 runs per configuration, 1000 steps total per run")+
+  facet_grid(~c1_percent_grammar_1)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(size = 6))
+
+```
+
+
+## Checkpoint
+
+- Gamma impacts time to equilibrium (TTE)
+
+- No difference in TTE when perseverance is > 0.5
+
+- Older cohort slows down TTE, exacerbated by increased age gap
+
+- Reservoir? When grammar varies only in the older cohort, their initial starting percentage will draw the younger cohort
+
+- Innovator: when grammar varies only in the younger cohort, 
+However, when cohort 2 does not use grammar 1, cohort 1 starts with increasingly higher percentages of using grammar 1, they themselves may end up with using grammar 1 more, but it does not drive the overall group usage.
+
+## Cohort preference
+
+```{r cp_data_import, echo = F}
+pref_proc <- read_csv(here("paper","processed_data","preference_proc.csv"), show_col_types = F)
+pref_types <- read_csv(here("paper","processed_data","preference_final_state.csv"), show_col_types = F)
+```
+
+```{r plot7.1, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(pref_types, aes(x = percent_grammar_1, y = final_state,
+             color = factor(chance_listen_to_outgroup),
+             group = factor(chance_listen_to_outgroup)))+
+  theme_bw()+
+  xlab("Initial percent of grammar 1")+
+  ylab("Final state")+
+  scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
+                     palette = 2)+ 
+  # scale_shape_manual(name = "type", values = c(14, 15, 16))+
+  # geom_point(alpha = 0.5)+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  stat_summary(fun = mean, geom = "point", size = 2)+
+  stat_summary(fun = mean, geom = "line")+
+  # ggtitle("Different starting percentages")+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  facet_grid(~factor(type))
+
+```
+
+## Cohort preference
+
+```{r plot7.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
+                           color = factor(chance_listen_to_outgroup),
+                           group = factor(chance_listen_to_outgroup)))+
+  xlab("Percent grammar 1")+
+  ylab("Equilibrium reached")+
+  theme_bw()+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  stat_summary(fun = mean, geom = "point", size = 2)+
+  stat_summary(fun = mean, geom = "line")+
+  scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
+                    palette = 1)+ 
+  labs(caption = "50 runs per configuration, 1000 steps total per run")
+
+```
+
+## Checkpoint
+
+- Increased gamma speeds up when equilibrium is reached, but not the final outcome; modulated by perseverance
+
+- Older cohort delays equilibrium
+
+- "Innovator" and "Reservoir" groups
+
+- Group preference will delay the equilibrium, and slightly impact equilibrium value
+
+# Discussion
 
 ## Conclusions
 
