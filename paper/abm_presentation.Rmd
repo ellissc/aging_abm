@@ -10,6 +10,7 @@ output:
     fig_caption: False
 classoption: "aspectratio=169"
 bibliography: bibliography.bib
+csl: apa.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -35,76 +36,61 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 
 # Background literature
 
-## Collective patterns of language usage change over time
+## Collective patterns of language usage
 
-- Google Books corpus (5.2 mill books) from 1800-2000[^1]
+<!-- :::: {.columns} -->
+<!-- ::: {.column width="50%"} -->
 
-- Ran a "culturenomics" study through an n-gram corpus analysis
+- N-gram corpus analysis of Google Books corpus[^1]
 
-- Quantified trends in lexical usage, grammatical patterns, and social usage
+- Diachronic changes in language usage and meaning[^2]
 
-[^1]: [@michelQuantitativeAnalysisCulture2011]
-
-## Collective patterns of language usage change over time
-
+<!-- ::: -->
+<!-- ::: {.column width="50%"} -->
 \centering
 ![Examples of changes in lexical usage over time]("ngram_grammar_fig"){width=50%}
+<!-- ::: -->
+<!-- :::: -->
+
+[^1]: [@michelQuantitativeAnalysisCulture2011]
+[^2]: [@bybee2015language; @bynon1977historical]
+
+## Collective patterns of language
+
+<!-- :::: {.columns} -->
+<!-- ::: {.column width="50%"} -->
+
+
+*Emergence of collective-level trends from individual usage*
+
+<!-- ::: -->
+<!-- ::: {.column width="50%"} -->
+\centering
+![Examples of changes in lexical usage over time]("interaction_fig"){width=50%}
+<!-- ::: -->
+<!-- :::: -->
 
 ## Mechanisms of language acquisition
 
-- Statistical learning[^2]
+- Statistical learning[^3]
 
-- Propose but verify (hypothesis testing)[^3]
+- Propose but verify (hypothesis testing)[^4]
 
-- Structural inference[^4]
+- Structural inference[^5]
 
-[^2]: Chen
-[^3]: Trueswell
-[^4]: Something?
+<!-- add more  -->
 
-## Learning rates
+[^3]: [@smith2008infants; @yu2007rapid]
+[^4]: [@trueswell2013propose]
+[^5]: [@kim2019knowledge]
 
-- MacMurray study: parallel learning, constant learning rate
+## Aging and learning
 
-- Blachstein study? Changes over the lifetime?
+- Initially rely on associative / bottom-up learning
 
-- Bryersbart study?
+- Later shift to inferential / top-down learning
 
-
-<!-- ## Age-related differences in lexico-semantic organization -->
-
-<!-- - Word association data has been used to explore the organization of our lexico-semantic space[^3] -->
-
-<!-- - Dubossarsky and colleagues[^4] analyzed lexical association networks -->
-
-<!-- - Found that the **organization** changes across the lifespan -->
-
-<!-- [^3]: [@dedeyneSmallWorldWords2019] -->
-<!-- [^4]: [@dubossarskyQuantifyingStructureFree2017] -->
-
-<!-- ## Age-related differences in lexico-semantic organization -->
-
-<!-- U-shaped developmental trajectory: -->
-
-<!-- Small and sparse $\rightarrow$ dense and well-connected $\rightarrow$ sparse with isolated nodes -->
-
-<!-- ![Networks across the lifespan]("dubossarsky_fig") -->
-
-<!-- ## Age-related differences in lexico-semantic processing -->
-
-<!-- - EEG has also been used to explore the temporal aspect of lexico-semantic processing [^5] -->
-
-<!-- - Previous study suggests that the neural signatures of predictive processing (increased frontal positivity) were reduced in older adults -->
-<!-- \pause -->
-<!-- - Aging may be related to changes in neural mechanisms of processing or the predictability among words/meanings -->
-
-<!-- [^5]:[@federmeierAgerelatedIndividualDifferences2010; @wlotkoPredictNotPredict2012] -->
-
-<!-- ## Main research question -->
-
-<!-- Language changes over time: interactions between the individuals and collective level dynamics. As individuals age, their ability to learn may be affected by cognitive decline. -->
-
-<!-- How do learning rates and aging impact collective-level trends in language change? -->
+<!-- - *Make a point here* -->
 
 # Formal model
 
@@ -123,7 +109,7 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 \centering
 !["Burnt"]("ngram_burnt"){width=30%}
     
-## Model assumptions[^5]
+## Model assumptions[^6]
 
 1. Language learning is based on imitating others, though this may change over the lifespan
 
@@ -141,9 +127,9 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 
     - E.g., more willing to learn from in-group members
     
-[^5]:Beeksma citation
+[^6]: [@beeksma2017probabilistic]
 
-## Outcome patterns[^6]
+## Outcome patterns[^7]
 
 1. **S-shaped curve in usage patterns**: Change happens slowly, then proceeds rapidly before slowing down again.
 
@@ -155,7 +141,7 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 
 5. **Threshold problem**: Initially rare variants may manage to spread through entire speech communities.
 
-[^6]: Troutman citation
+[^7]: [@troutman2008social]
 
 
 ## Initialization: network
@@ -199,13 +185,13 @@ Represent language users
 
 - Communication
 
-    - Speaking (not synchronous)
+    - Speaking (asynchronous)
     
     - Neighboring agents listen
 
 - Aging
 
-## Dynamics: Speaking
+## Dynamics: speaking
 
 - Nodes will generate an 'utterance', which is either 0 or 1 (*burnt or burned*)
 
@@ -216,7 +202,7 @@ Represent language users
 \centering
 ![]("troutman_fig6"){width=40%}
 
-## Dynamics: Listening
+## Dynamics: listening
 
 - Neighboring nodes will pick a grammar that will be used to interpret heard utterance
 
@@ -383,7 +369,7 @@ ggplot(gvdf,
 ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
                       group = factor(initial_gamma)))+
   xlab("Initial gamma")+
-  ylab("Equilibrium reached (%)")+
+  ylab("Time to equilibrium (%)")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", fill = "lightblue", color = "black")+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.001)+
@@ -421,7 +407,7 @@ ggplot(lndf2,
 ggplot(lndf2_proc, aes(x = initial_gamma, y = eq_percent,
                       group = factor(initial_gamma)))+
   xlab("Initial gamma")+
-  ylab("Equilibrium reached (%)")+
+  ylab("Time to equilibrium (%)")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", fill = "lightgreen", color = "black")+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.001)+
@@ -474,7 +460,7 @@ lndf3_proc <- lndf3_proc |>
 ggplot(lndf3_proc, aes(x = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)")),
                        y = eq_percent))+
   xlab("Deterministic age?")+
-  ylab("Equilibrium reached (%)")+
+  ylab("Time to equilibrium (%)")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", fill = "darkgreen", color = "black")+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
@@ -511,7 +497,7 @@ ggplot(vgp,
 ggplot(vgp_proc, aes(x = factor(perseverance), y = eq_percent,
                        group = factor(perseverance)))+
   xlab("Perseverance of learning")+
-  ylab("Equilibrium reached")+
+  ylab("Time to equilibrium")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", fill = "turquoise", color = "black")+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
@@ -559,7 +545,7 @@ ggplot(tcg_proc, aes(x = factor(percent_cohort2), y = eq_percent,
                      fill = factor(cohort2_age),
                      group = factor(percent_cohort2)))+
   xlab("Cohort 2 percentage")+
-  ylab("Equilibrium reached")+
+  ylab("Time to equilibrium")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", color = "black")+
   scale_fill_brewer(name = "Group 2 age", type = "qual",
@@ -604,7 +590,7 @@ ggplot(tcg_group_proc |>
                      fill = factor(cohort2_age),
                      group = factor(percent_cohort2)))+
   xlab("Cohort 2 percentage")+
-  ylab("Equilibrium reached")+
+  ylab("Time to equilibrium")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", color = "black")+
   scale_fill_brewer(name = "Group 2 age", type = "qual",
@@ -654,7 +640,7 @@ ggplot(vgg_g2v, aes(x = type, y = final_state, group = type, fill = type, color 
 
 ```{r plot6.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 8}
 ggplot(vgg_g1v, aes(x = type, y = final_state, group = type, fill = type, color = type))+
-  xlab("Equilibrium reached")+
+  xlab("Time to equilibrium")+
   theme_bw()+
   geom_violin()+
   # geom_density()+
@@ -714,7 +700,7 @@ ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
                            color = factor(chance_listen_to_outgroup),
                            group = factor(chance_listen_to_outgroup)))+
   xlab("Percent grammar 1")+
-  ylab("Equilibrium reached")+
+  ylab("Time to equilibrium (%)")+
   theme_bw()+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
   stat_summary(fun = mean, geom = "point", size = 2)+
@@ -734,14 +720,6 @@ ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
 - "Innovator" and "Reservoir" groups
 
 - Group preference will delay the equilibrium, and slightly impact equilibrium value
-
-# Discussion
-
-## Conclusions
-
-##
-
-Thank you.
 
 ##
 
