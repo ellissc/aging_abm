@@ -102,16 +102,19 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 
 \pause
 
-- Model of the usage and spread of a grammatical variant throughout a population
+- Model of the usage and spread of a grammatical variant throughout a population[^7]
 
     - Past tense ending can be "-t" or "-ed", such as in "burnt" or "burned"
     
 \centering
 !["Burnt"]("ngram_burnt"){width=30%}
     
+[^7]: [@troutman2008social]
+
+
 ## Model assumptions[^6]
 
-1. Language learning is based on imitating others, though this may change over the lifespan
+1. Language learning is based on imitating others
 
     - E.g., individuals may learn quickly early on, but slow down as they age
     
@@ -127,21 +130,24 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 
     - E.g., more willing to learn from in-group members
     
+\pause
+
+4. Language change has multiple stable equilibriums
+    
 [^6]: [@beeksma2017probabilistic]
 
-## Outcome patterns[^7]
+<!-- ## Outcome patterns -->
 
-1. **S-shaped curve in usage patterns**: Change happens slowly, then proceeds rapidly before slowing down again.
+<!-- 1. **S-shaped curve in usage patterns**: Change happens slowly, then proceeds rapidly before slowing down again. -->
 
-2. **Intra-speaker variation**: Change is gradual and there is a period of intra-speaker variation.
+<!-- 2. **Intra-speaker variation**: Change is gradual and there is a period of intra-speaker variation. -->
 
-3. **Categorical norms**: With competition, speakers move toward categorically using just one of the competing variants.
+<!-- 3. **Categorical norms**: With competition, speakers move toward categorically using just one of the competing variants. -->
 
-4. **Multi-stability**: Language change can have multiple stable outcomes. *May result in dialect subgroups*
+<!-- 4. **Multi-stability**: Language change can have multiple stable outcomes. *May result in dialect subgroups* -->
 
-5. **Threshold problem**: Initially rare variants may manage to spread through entire speech communities.
+<!-- 5. **Threshold problem**: Initially rare variants may manage to spread through entire speech communities. -->
 
-[^7]: [@troutman2008social]
 
 
 ## Initialization: network
@@ -377,95 +383,96 @@ ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
 ```
 
 
-## Variation of learning rate amongst individual 
+<!-- ## Variation of learning rate amongst individual  -->
 
-```{r volrai_data_import, echo = F}
-lndf2_proc <- read_csv(here("paper","processed_data","lndf2_proc.csv"), show_col_types = F)
-lndf2 <- read_csv(here("paper","processed_data","lndf2_final-only.csv"), show_col_types = F)
-```
+<!-- ```{r volrai_data_import, echo = F} -->
+<!-- lndf2_proc <- read_csv(here("paper","processed_data","lndf2_proc.csv"), show_col_types = F) -->
+<!-- lndf2 <- read_csv(here("paper","processed_data","lndf2_final-only.csv"), show_col_types = F) -->
+<!-- ``` -->
 
-```{r plot2.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
-ggplot(lndf2,
-       aes(x = percent_grammar_1, y = mean_state_of_nodes,
-           color = factor(initial_gamma),
-           group = factor(initial_gamma)))+
-  theme_bw()+
-  xlab("Initial percentage of Grammar 1")+
-  ylab("Mean state of nodes")+
-  scale_color_brewer(name = "Initial gamma",# type = "qual",
-                     palette = 5)+ 
-  stat_summary(fun = mean, geom = "point")+
-  stat_summary(fun = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-  labs(caption = "Faceted by Gamma SD; 50 runs per configuration, 1000 steps total per run")+
-  facet_wrap(~gamma_sd)
-```
+<!-- ```{r plot2.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7} -->
+<!-- ggplot(lndf2, -->
+<!--        aes(x = percent_grammar_1, y = mean_state_of_nodes, -->
+<!--            color = factor(initial_gamma), -->
+<!--            group = factor(initial_gamma)))+ -->
+<!--   theme_bw()+ -->
+<!--   xlab("Initial percentage of Grammar 1")+ -->
+<!--   ylab("Mean state of nodes")+ -->
+<!--   scale_color_brewer(name = "Initial gamma",# type = "qual", -->
+<!--                      palette = 5)+  -->
+<!--   stat_summary(fun = mean, geom = "point")+ -->
+<!--   stat_summary(fun = mean, geom = "line")+ -->
+<!--   stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+ -->
+<!--   labs(caption = "Faceted by Gamma SD; 50 runs per configuration, 1000 steps total per run")+ -->
+<!--   facet_wrap(~gamma_sd) -->
+<!-- ``` -->
 
-## Variation of learning rate amongst individual 
+<!-- ## Variation of learning rate amongst individual  -->
 
-```{r plot2.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
-ggplot(lndf2_proc, aes(x = initial_gamma, y = eq_percent,
-                      group = factor(initial_gamma)))+
-  xlab("Initial gamma")+
-  ylab("Time to equilibrium (%)")+
-  theme_bw()+
-  stat_summary(fun = mean, geom = "bar", fill = "lightgreen", color = "black")+
-  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.001)+
-  labs(caption = "50 runs per configuration, 1000 steps total per run")+
-  facet_wrap(~gamma_sd)
-```
+<!-- ```{r plot2.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7} -->
+<!-- ggplot(lndf2_proc, aes(x = initial_gamma, y = eq_percent, -->
+<!--                       group = factor(initial_gamma)))+ -->
+<!--   xlab("Initial gamma")+ -->
+<!--   ylab("Time to equilibrium (%)")+ -->
+<!--   theme_bw()+ -->
+<!--   stat_summary(fun = mean, geom = "bar", fill = "lightgreen", color = "black")+ -->
+<!--   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.001)+ -->
+<!--   labs(caption = "50 runs per configuration, 1000 steps total per run")+ -->
+<!--   facet_wrap(~gamma_sd) -->
+<!-- ``` -->
+
 
 ## Checkpoint
 
 - Increased gamma decrease time to equilibrium, but not (systematically) affect the final outcome
 
 
-## Decrease in learning rate with age
+<!-- ## Decrease in learning rate with age -->
 
-```{r dilrwa_data_import, echo = F}
-lndf3_proc <- read_csv(here("paper","processed_data","lndf3_proc.csv"), show_col_types = F)
-det_age <- read_csv(here("paper","processed_data","lndf3_final-only.csv"), show_col_types = F)
-```
+<!-- ```{r dilrwa_data_import, echo = F} -->
+<!-- lndf3_proc <- read_csv(here("paper","processed_data","lndf3_proc.csv"), show_col_types = F) -->
+<!-- det_age <- read_csv(here("paper","processed_data","lndf3_final-only.csv"), show_col_types = F) -->
+<!-- ``` -->
 
-```{r plot3.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7}
-det_age |> 
-  ggplot(aes(x = percent_grammar_1, y = mean_state_of_nodes,
-             color = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)")),
-             group = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)"))))+
-  theme_bw()+
-  xlab("Initial percentage of Grammar 1")+
-  ylab("Mean state of nodes")+
-  scale_color_brewer(name = "Age type", type = "qual",
-                     palette = 2)+
-  stat_summary(fun = mean, geom = "point")+
-  stat_summary(fun = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-  labs(caption = "50 runs per configuration, 1000 steps total per run")
-```
+<!-- ```{r plot3.1, echo = F,  warning=F, message=F, fig.height=3, fig.width = 7} -->
+<!-- det_age |>  -->
+<!--   ggplot(aes(x = percent_grammar_1, y = mean_state_of_nodes, -->
+<!--              color = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)")), -->
+<!--              group = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)"))))+ -->
+<!--   theme_bw()+ -->
+<!--   xlab("Initial percentage of Grammar 1")+ -->
+<!--   ylab("Mean state of nodes")+ -->
+<!--   scale_color_brewer(name = "Age type", type = "qual", -->
+<!--                      palette = 2)+ -->
+<!--   stat_summary(fun = mean, geom = "point")+ -->
+<!--   stat_summary(fun = mean, geom = "line")+ -->
+<!--   stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+ -->
+<!--   labs(caption = "50 runs per configuration, 1000 steps total per run") -->
+<!-- ``` -->
 
-## Decrease in learning rate with age
+<!-- ## Decrease in learning rate with age -->
 
-```{r plot3.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
-lndf3_proc <- lndf3_proc |> 
-  mutate(graph_group = if_else(deterministic_age == T,
-                               "Deterministic",
-                               if_else(deterministic_age == F & age_sd == 30,
-                                       "Probabilistic (SD = 30)",
-                                       if_else(deterministic_age == F & age_sd == 50,
-                                               "Probabilistic (SD = 50)",
-                                               if_else(deterministic_age == F & age_sd == 100,
-                                                       "Probabilistic (SD = 100)",
-                                                       "N/A")))))
+<!-- ```{r plot3.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7} -->
+<!-- lndf3_proc <- lndf3_proc |>  -->
+<!--   mutate(graph_group = if_else(deterministic_age == T, -->
+<!--                                "Deterministic", -->
+<!--                                if_else(deterministic_age == F & age_sd == 30, -->
+<!--                                        "Probabilistic (SD = 30)", -->
+<!--                                        if_else(deterministic_age == F & age_sd == 50, -->
+<!--                                                "Probabilistic (SD = 50)", -->
+<!--                                                if_else(deterministic_age == F & age_sd == 100, -->
+<!--                                                        "Probabilistic (SD = 100)", -->
+<!--                                                        "N/A"))))) -->
 
-ggplot(lndf3_proc, aes(x = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)")),
-                       y = eq_percent))+
-  xlab("Deterministic age?")+
-  ylab("Time to equilibrium (%)")+
-  theme_bw()+
-  stat_summary(fun = mean, geom = "bar", fill = "darkgreen", color = "black")+
-  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
-  labs(caption = "50 runs per configuration, 1000 steps total per run")
-```
+<!-- ggplot(lndf3_proc, aes(x = factor(graph_group, levels = c("Deterministic", "Probabilistic (SD = 30)", "Probabilistic (SD = 50)", "Probabilistic (SD = 100)")), -->
+<!--                        y = eq_percent))+ -->
+<!--   xlab("Deterministic age?")+ -->
+<!--   ylab("Time to equilibrium (%)")+ -->
+<!--   theme_bw()+ -->
+<!--   stat_summary(fun = mean, geom = "bar", fill = "darkgreen", color = "black")+ -->
+<!--   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+ -->
+<!--   labs(caption = "50 runs per configuration, 1000 steps total per run") -->
+<!-- ``` -->
 
 ## Variation of speed of decrease (perseverance)
 
