@@ -636,7 +636,7 @@ final_counts <- pref_df |>
 
 pref_types <- pref_df |> 
   filter(step == 1000) |> 
-  select(c(chance_listen_to_outgroup, percent_grammar_1, 
+  select(c(chance_listen_to_outgroup, percent_grammar_1, percent_cohort2,
            cohort1_state, cohort2_state, mean_state_of_nodes)) |> 
   pivot_longer(cols = c(cohort1_state, cohort2_state, mean_state_of_nodes),
                values_to = "final_state", names_to = "type")
@@ -645,7 +645,7 @@ pref_proc <- pref_df |>
   left_join(final_counts, by = "run_number") |> 
   mutate(equilibrium_reached = abs(mean_state_of_nodes-equilibrium)<0.01) |> 
   filter(equilibrium_reached == T) |> 
-  group_by(run_number, chance_listen_to_outgroup, percent_grammar_1) |> 
+  group_by(run_number, chance_listen_to_outgroup, percent_grammar_1, percent_cohort2) |> 
   summarize(eq_step = min(step)) |> 
   mutate(max_steps = 1000,
          eq_percent = eq_step / max_steps)
@@ -673,7 +673,7 @@ pref_types |>
   stat_summary(fun = mean, geom = "line")+
   # ggtitle("Different starting percentages")+
   labs(caption = "50 runs per configuration, 1000 steps total per run")+
-  facet_grid(~factor(type))
+  facet_grid(percent_cohort2~factor(type))
   # No difference in resulting group-level equilibria, but groups that are less willing to listen have lower equilibria?
 
 pref_types |> 

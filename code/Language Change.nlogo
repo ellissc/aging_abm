@@ -852,7 +852,7 @@ percent-cohort2
 percent-cohort2
 0
 100
-75.0
+50.0
 10
 1
 %
@@ -976,7 +976,7 @@ chance-listen-to-outgroup
 chance-listen-to-outgroup
 0.1
 1
-0.9
+1.0
 0.1
 1
 NIL
@@ -2091,7 +2091,9 @@ NetLogo 6.3.0
       <value value="40"/>
       <value value="45"/>
       <value value="50"/>
+      <value value="55"/>
       <value value="60"/>
+      <value value="65"/>
       <value value="70"/>
       <value value="80"/>
       <value value="90"/>
@@ -2127,14 +2129,12 @@ NetLogo 6.3.0
       <value value="30"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="percent-cohort2">
-      <value value="25"/>
       <value value="50"/>
-      <value value="75"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="cohort2-age">
       <value value="200"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="chance-listen-to-outgroup" first="0.1" step="0.1" last="0.9"/>
+    <steppedValueSet variable="chance-listen-to-outgroup" first="0.1" step="0.1" last="1"/>
     <enumeratedValueSet variable="cohort-based-grammar">
       <value value="false"/>
     </enumeratedValueSet>

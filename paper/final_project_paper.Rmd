@@ -22,43 +22,29 @@ theme_set(theme_bw()) #+ theme(text =  element_text(size = 14)))
 
 # Abstract
 
-Language change can be understood as representing the dynamic relationship between group-level and individual usage patterns. 
-According to statistical learning, language learners are sensitive to the underlying distributional properties of language usage. 
-Therefore, when usage patterns vary across time, it would be expected that the language acquisition of individuals will be impacted by the usage patterns that they experience during their lifetime. 
-While previous research has shown differences in the language representation and cognitive capabilities over the lifespan (i.e., early vocab spurt, late cognitive decline), the impact of varying learning rates on language change is not well understood. Using an agent-based model of (syntactic) language change, this project aims to explore the interaction between learning rates and aging may impact diachronic changes in usage patterns of language.
-**Main finding: impact on time to equilibrium**
-
+Language change can be understood as representing the dynamic relationship between group-level and individual usage patterns, where individual usage influences future learning and production.
+While previous research has shown that language learning capabilities are present well into adulthood, along with age-related differences in language processing and representation, the impact of learning rates on language change is not well understood.
+The current research uses an agent-based model of (syntactic) language change to explore the interaction between learning rates, aging, and between-cohort communication with regards to the spread of language variants through a population.
+Namely, the results demonstrate that the time to equilibrium in the system is modulated by these factors, more than the final outcome of the system.
 
 # Introduction
 
-## Language change
+## Language changes over time
+
+Which sounds more correct, "the snazzy snake *sneaked* through the snow-covered snacks" or "the snazzy snake *snuck* through the snow-covered snacks"? Based on an analysis of lexical usage in a diachronic text corpora, "sneaked" is being replaced by "snuck" in common usage [@michelQuantitativeAnalysisCulture2011]. How do these dynamics of language change play out in a population?
 
 Language can be viewed as a complex adaptive system, where it is a system of speakers in a speech community, whose behavior is based on past interactions, which then influence future behaviors [@five2009language]. 
-Namely, individual usage patterns form the collective language usage patterns, then future individuals learn from these collective usage patterns. 
+The dynamics of this complex adaptive system change over historical time, through rising and declining trends for words across the collective usage statistics of the collective [@bybee2015language; @michelQuantitativeAnalysisCulture2011]. 
 Figure 1 below shows an example of this feedback loop between collective usage patterns and individual language usage.
-
-It has been demonstrated before that language changes over historical time in terms of their collective usage statistics across users [@bybee2015language; @michelQuantitativeAnalysisCulture2011]. 
-Yet, little is known about the relationship between changes in collective usage patterns and the meaning representations of individual language users.
+If language change is an emergent property of this feedback loop, how might learning impact language change?
 
 ![Example of the feedback loop in the complex adaptive system.](interaction_fig){width=35%}
 
-## Language learning
+## Interactions between aging and language
 
-- Ryskin verb bias
-
-- Brysbaert
-
-- Castro paper
-
-## Aging and language
-
-The organization of lexico-semantic representations across the lifespan has been studied using word association data [@dedeyneSmallWorldWords2019].
-@dubossarskyQuantifyingStructureFree2017 analyzed lexical association networks and found that their organization changes over time. 
-Namely, they observed a U-shaped developmental trajectory: networks are small and sparse (e.g., reduction of average shortest path length and entropy) during language acquisition (10--18 y.o.), they are dense and well-connected in mid-life (e.g., increased in-degree and out-degree), and then they become sparse again, with a larger proportion of isolated, peripheral nodes, in late-life (e.g., reduced in/out degree, increased entropy). 
-
-In addition to age-related differences in lexico-semantic organization, previous studies have used electroencephalography (EEG) to explore the relationship between lexico-semantic processing and aging [@federmeier2010age; @wlotkoPredictNotPredict2012]. 
-Some signatures of predictive processing (e.g., increased anterior positivity in response to a word that is less closely related to a preceding cue) are reduced in older adults, suggesting that aging may be related to changes in neural mechanisms of prediction and/or in the predictability relationships among words and meanings.
-
+Previous research has shown that the language learning ability is present well into adulthood [@brysbaert2014concreteness; @castro2021category; @ryskin2017verb], while other studies have shown that cognitive capabilities may decline across the lifespan [@hartshorne2015does; @salthouse2009does].
+Still, the developmental patterns of associative networks across the lifespan may reflect changes in both cognitive control along with accumulation of lexical information [@dubossarskyQuantifyingStructureFree2017].
+Therefore, given that there may be age-related differences in (language) learning abilities, how would changing learning rates, aging, and group membership impact the types of patterns observed in language change dynamics?
 
 # Model
 
@@ -75,7 +61,7 @@ The model's assumptions are as follows, modified from @beeksma2017probabilistic 
 
 3. There are variations between individuals.
 
-4. Language can be influenced by external factors.
+4. Language can be influenced by external factors, such as group membership.
 
 5. Language change has multiple stable equilibrium (*no set outcome*).
 
@@ -88,13 +74,15 @@ With this model, the main outcome measures will be:
 
 2. Time to equilibrium: *the first time step that the group reaches that mean state.*
 
+Code for the model and analyses can be found at: https://github.com/ellissc/aging_abm
+
 ## Model description
 
 The model initializes a preferential attachment network, where each node in the network represents a language user. 
 There are two grammar variants, which are coded as 0 or 1, and are distributed throughout the population based on a specified percentage.
-Figure 2 shows an example of the preferential attachment network.
+Figure 2A shows an example of the preferential attachment network.
 
-![Example of the type of network generated in the model.](example_network){width=35%}
+![A) Example network generated in the model. B) Example of dialect sub-groups at the end of the simulation. Color represent a node's internal state, or bias towards one grammar or the other.](network_combined){width=55%}
 
 Nodes have the following properties; state, spoken state, age, cohort, and gamma.
 *State* represents the node's current grammar state, ranging from [0,1], which influences their likelihood to use one of the two grammar variants. 
@@ -106,7 +94,7 @@ During initialization, the age of the nodes can be distributed according to a un
 Likewise, there are two possible *cohort*s, which are initialized at the start.
 The cohort ages can be specified, such that Cohort 1 starts at *age = 0* and Cohort 2 starts at *age = 50*.
 Moreover, the grammars can be distributed at different percentages for each cohort, such that Cohort 1 starts with 25\% using Grammar 1 and Cohort 2 starts with 50\% using Grammar 1.
-Lastly, *anti-preference* can be specified, such that for each "communication", a given node has a chance to ignore out-group members.
+Lastly, *willingness to listen to out-group* can be specified, such that for each "communication", a given node has a chance to ignore out-group members.
 
 *Gamma* is the learning rate of a given node. 
 Higher gamma values (0.08) mean that the node will adjust their state more when listening, as opposed to a lower gamma (0.01).
@@ -121,7 +109,7 @@ Regarding *speaking*, each node asynchronously generates an 'utterance', which c
 Regarding *listening*, all of the connected neighboring nodes will listen and use a linear reward-penalty algorithm to update their state [@bush1951mathematical; @bush1955stochastic; @yang2002knowledge].
 For this, they select a grammar that will be used to interpret the utterance (0 or 1). If the listener's selected grammar matches the heard utterance, they successfully interpret the utterance and update their internal state towards the heard state, otherwise, it will be updated away from the heard state.
 Here, the gamma parameter modifies the step size that the listener node takes when they update their internal state.
-As previously mentioned, if *anti-preference* is specified, there may be a chance that a given node does not update their internal state if the speaker is a member of the other cohort.
+As previously mentioned, if *willingness to listen to out-group* is specified, there may be a chance that a given node does not update their internal state if the speaker is a member of the other cohort.
 
 ```{r gamma-plot, echo = F, fig.align = 'center', fig.height = 2.5, fig.width = 5, fig.cap = "Graph of learning curve, which describes how learning rate may change with age. Colors represent different perseverance values."}
 gamma.function = function(a, b, age, constant){
@@ -291,13 +279,11 @@ ggplot(gvdf,
   geom_text(aes(x = 61, y = 0.5), label = "<- Dialect\nsubgroups", color = "black")
 ```
 
-Figure 4 shows the impact of learning rate on the final state of the networks. When the initial percentage of Grammar 1 is low (< 35\% of nodes), it rarely spreads through the population, as almost all of the runs end with grammar 0 as the majority. On the flip side, when Grammar 1 is present in the majority of agents (> 60\% of nodes), it will spread through the network the majority of the time. However, when it is present in half of the nodes, dialect subgroups will emerge (Fig. 5), where different areas of the network will settle on different grammars.
+Figure 4 shows the impact of learning rate on the final state of the networks. When the initial percentage of Grammar 1 is low (< 35\% of nodes), it rarely spreads through the population, as almost all of the runs end with grammar 0 as the majority. On the flip side, when Grammar 1 is present in the majority of agents (> 60\% of nodes), it will spread through the network the majority of the time. However, when it is present in half of the nodes, dialect subgroups will emerge (Fig. 2B), where different areas of the network will settle on different grammars.
 
-![Dialect sub-groups.](dialect_subgroups){width=45%}
-
-For the variable that we manipulated between runs, gamma, there is no systematic impact on the final state that the system reaches. Regardless of how quickly nodes learn, the final result is mainly determined by the initial percentage of Grammar 1.
+For the variable that was manipulated between runs, gamma, there is no systematic impact on the final state that the system reaches. Regardless of how quickly nodes learn, the final result is mainly determined by the initial percentage of Grammar 1.
 However, when we look at the individual runs, we see a marked difference as gamma is manipulated.
-Figure 6 plots the mean state of the system over time for individual runs, based on various configurations of gamma and initial percent of Grammar 1.
+Figure 5 plots the mean state of the system over time for individual runs, based on various configurations of gamma and initial percent of Grammar 1.
 Namely, we see that while the equilibrium reached by the system does not differ between different gamma values, the speed at which it reaches that equilibrium decreases as gamma increases.
 
 
@@ -327,8 +313,8 @@ ggplot(gvdf_full, aes(x = step, y = mean_state_of_nodes, group = run_number, col
 
 ```
 
-Figure 7 shows the proportional time to equilibrium for different values of gamma. The initial percentage of Grammar 1 does not impact the time to equilibrium.
-When the learning rate is the slowest (gamma = 0.01), the system will reach equilibrium at a little less than 400 steps (0.4), while the fastest learning rate will cause the system to reach equilibrium in about 100 steps. As gamma increases, the decrease in time to equilibrium also decreases as well, seemingly approaching a limit of information transfer through the system.
+Figure 6 shows the proportional time to equilibrium for different values of gamma. The initial percentage of Grammar 1 does not greatly impact the time to equilibrium.
+When the learning rate is the slowest (gamma = 0.01), the system will reach equilibrium at a little less than 400 steps (0.4), while the fastest learning rate will cause the system to reach equilibrium in about 100 steps. As gamma increases, the change in time to equilibrium also decreases as well, seemingly approaching a limit of information transfer through the system.
 
 ```{r plot1.2, echo = F,  warning=F, message=F, fig.align = 'center', fig.height=2.5, fig.width = 5, fig.cap = "Time to equilibrium across the different values of gamma. Bars represent standard error."}
 ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
@@ -344,12 +330,12 @@ ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
 #        width = 5, height = 4)
 ```
 
-In summary, gamma (learning rate) impacts the time to equilibrium of the system, and this impact decreases as gamma increases.
+In summary, gamma (learning rate) impacts the time to equilibrium of the system, and this effect size decreases as gamma increases.
 
 ## Learning perseverance
 
 For these next simulations, gamma will be determined by age, and the perseverance of learning (rate of decrease) will be manipulated. Refer to Fig. 3 for the relationship between age and gamma, where decreasing perseverance increases the speed at which learning rate decreases with age.
-Figure 8 shows the impact of learning perseverance on the mean state of the nodes at the end of the simulation. Similar to before, there does not seem to be a systematic relationship between perseverance and the final state.
+Figure 7 shows the impact of learning perseverance on the mean state of the nodes at the end of the simulation. Similar to before, there does not seem to be a systematic relationship between perseverance and the final state.
 
 ```{r vosodp_data_import, echo = F}
 vgp_proc <- read_csv(here("paper","processed_data","vgp_proc.csv"), show_col_types = F)
@@ -373,7 +359,7 @@ ggplot(vgp,
 
 ```
 
-However, when we plot the relationship between perseverance and time to equilibrium (Fig. 9), we see that most of the learning rate curves (0.5 $\leq$ perseverance $\leq$ 3), the time to equilibrium is very similar. Only when the learning rate quickly decreases (perseverance = 0.25) does the time to equilibrium increase. The range of time to equilibrium for these persevernace variations are similar in range to when gamma is varied.
+However, when we plot the relationship between perseverance and time to equilibrium (Fig. 8), we see that most of the learning rate curves (0.5 $\leq$ perseverance $\leq$ 3), the time to equilibrium is very similar. Only when the learning rate quickly decreases (perseverance = 0.25) does the time to equilibrium increase. The range of time to equilibrium for these perseverance variations are similar in range to when gamma is varied.
 
 ```{r plot4.2, echo = F,  warning=F, message=F, fig.align = 'center', fig.height=2.5, fig.width = 5, fig.cap = "Time to equilibrium across the different values of perseverance, with standard error bars."}
 ggplot(vgp_proc, aes(x = factor(perseverance), y = eq_percent,
@@ -389,14 +375,14 @@ ggplot(vgp_proc, aes(x = factor(perseverance), y = eq_percent,
 #        width = 5, height = 4)
 ```
 
-In summary, we see little difference of perseverance's impact on time to equilibrium when perseverance is greater than 0.5.
+In summary, there is little difference of perseverance's impact on time to equilibrium when perseverance is greater than 0.5.
 
 ## Aging and cohort equilibria
 
 For this next set of comparisons, gamma will be set to decrease with age, with perseverance set at 1. In the simulations, there are two age cohorts, which the age gap between is varied. Similar to before, the initial starting percentage of Grammar 1 will be varied as well. 
 <!-- Only look at time to equilibrium and cohort equilibria. -->
 
-Figure 10 shows the time to equilibrium for different combinations of the initial percentage of Grammar 1 and population composition (percent of nodes in cohort 2). 
+Figure 9 shows the time to equilibrium for different combinations of the initial percentage of Grammar 1 and population composition (percent of nodes in cohort 2). 
 Cohort 1 started at age 0, so the different facets represent the age gap between the two cohorts.
 First, as the age difference between cohorts increases, the simulations where Grammar 1 was used initially by half the population increasingly takes longer on average to reach equilibrium.
 This effect generally seems to be more pronounced for the simulations where the majority of nodes were cohort 2.
@@ -425,7 +411,7 @@ ggplot(tcg_proc |> filter(percent_grammar_1 %nin% c(35, 45)),
     facet_grid(~cohort2_age)
 ```
 
-Figure 11 shows the separate equilibrium for each cohort, based on the initial percentage of cohort 2.
+Figure 10 shows the separate equilibrium for each cohort, based on the initial percentage of cohort 2.
 The time to equilibrium seems to be generally consistent across the different variations, regardless of the age gap.
 Cohort 2, however, takes longer to reach equilibrium as they become more numerous in the population.
 Then, as the age gap increases, this impact on time to equilibrium increases as well.
@@ -465,34 +451,41 @@ ggplot(tcg_group_proc |>
 
 In summary, the older cohort slows down the time to equilibrium, and as the age gap increases, the impact on time to equilibrium increases as well.
 
-## Cohort anti-preference
+## Between-cohort communication
 
-Brief explanation:
+For this last set of simulations, gamma was set to decrease with age at a perseverance of 1 and the two age cohorts had an age gap of 200, with the second cohort kept at 50\%.
+The main variation was the willingness to listen to out-group. When this value is 1, nodes will always listen and update their state accordingly regardless of the speaker node's cohort. As this value lowers, the probability of the listener node updating their state decreases as well. For example, a *willingness* value of 0.6 means that there is a 60\% chance that a cohort 1 listener node would update their state if the speaker was cohort 2.
 
-What is kept constant, what varies:
-
-Description of plot one:
+As seen in Figure 11, as the willingness decreases, the threshold for full spread of a grammar variant increases. Namely, as willingness decreases, the s-curve becomes more linear, meaning that more popular variants may not spread as much throughout the population. For example, when Grammar 1 is distributed throughout 70\% of the nodes, it will spread to 96\% of the nodes when willingness is 1.0, but will only spread to 88\% when willingness is set to 0.1. In other words, it takes higher initial percentages of Grammar 1 to spread throughout the population.
 
 
 ```{r cp_data_import, echo = F}
-pref_proc <- read_csv(here("paper","processed_data","preference_proc.csv"), show_col_types = F)
-pref_types <- read_csv(here("paper","processed_data","preference_final_state.csv"), show_col_types = F)
+pref_proc <- read_csv(here("paper","processed_data","preference_proc.csv"), show_col_types = F) |> 
+  filter(percent_cohort2 == 50)
+pref_types <- read_csv(here("paper","processed_data","preference_final_state.csv"), show_col_types = F) |> 
+  filter(percent_cohort2 == 50)
+
+# pref_types |> 
+#   filter(type == "Overall mean" & percent_grammar_1 == 70) |>
+#   group_by(chance_listen_to_out-group, percent_grammar_1) |> 
+#   summarize(mean = mean(final_state))
 ```
 
-```{r plot7.1, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+```{r plot7.1, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7, fig.cap = "Spread throughout the population based on willingness to listen to the opposite cohort. Color represents the different values of willingness to listen."}
 ggplot(pref_types |> filter(type == "Overall mean"), aes(x = percent_grammar_1, y = final_state,
-             color = factor(chance_listen_to_outgroup),
+             color = factor(chance_listen_to_outgroup), shape = factor(chance_listen_to_outgroup),
              group = factor(chance_listen_to_outgroup)))+
   theme_bw()+
   xlab("Initial percent of Grammar 1")+
   ylab("Mean state of nodes")+
-  scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
+  scale_color_brewer(name = "Willingness\nto listen", type = "div",
                      palette = 2)+ 
   # scale_shape_manual(name = "type", values = c(14, 15, 16))+
   # geom_point(alpha = 0.5)+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-  stat_summary(fun = mean, geom = "point", size = 2)+
-  stat_summary(fun = mean, geom = "line")
+  stat_summary(fun = mean, geom = "line")+
+  # stat_summary(fun = mean, geom = "point", size = 2)+
+  scale_shape_manual(values = c(0, 0, 0, 16, 16, 16, 16, 17, 17, 17), name = "Willingness\nto listen")
 
 # ggsave(filename = "test6.png",
 #        dpi = 600, units = "in",
@@ -501,23 +494,23 @@ ggplot(pref_types |> filter(type == "Overall mean"), aes(x = percent_grammar_1, 
 ```
 
 
-Description of plot two:
+Figure 12 shows the impact of willingness to listen to out-group on time to equilibrium. 
+For a standard simulation (willingness = 1), the time to equilibrium is n-shaped; low time to equilibrium at extreme values of initial percentage of Grammar 1, and peaks at 50\% of Grammar 1.
+Then, as willingness decreases, time to equilibrium increases across all initial starting percentages of Grammar 1, demonstrating that decreased willingness to listen slows the spread of language through a population.
 
 
-```{r plot7.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+```{r plot7.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7, fig.cap = "Time to equilibrium based on willingness to listen to the out-group. "}
 ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
                            color = factor(chance_listen_to_outgroup),
                            group = factor(chance_listen_to_outgroup)))+
-  xlab("Percent Grammar 1")+
+  xlab("Initial percent of Grammar 1")+
   ylab("Time to equilibrium (%)")+
   theme_bw()+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
   stat_summary(fun = mean, geom = "point", size = 2)+
   stat_summary(fun = mean, geom = "line", linetype = "dashed")+
   scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
-                    palette = 2)+ 
-  labs(caption = "50 runs per configuration, 1000 steps total per run")+
-  ggtitle("Anti-preference and time-to-equilibrium")
+                    palette = 2)
 
 # ggsave(filename = "test7.png",
 #        dpi = 600, units = "in",
@@ -525,58 +518,35 @@ ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
 
 ```
 
-In summary, cohort anti-preference will delay the equilibrium, and slightly impact final equilibrium.
+In summary, (decreased) willingness to listen delays the equilibrium and increases the threshold for a variant to spread throughout the population.
 
 # Discussion
 
-Summarize the results, in the context of previous literature:
+Overall, these analyses suggest that learning rate mainly impacts time to equilibrium, while group membership factors impact the final state of the system.
+Variations in learning rate, aging, and perseverance of learning all impacted the time to equilibrium of the system, with little systematic differences in the final state of the system.
+When group membership factors were added, such that nodes in the network have a chance to ignore out-group members, the relationship between the initial starting percentage of the grammatical variant shifted from a sigmoid to a more linear relationship.
 
-- Learning rate impacts time to equilibrium, but not the final system outcome
-
-- Except for extreme decay (0.25), majority of learning perseverance curves have similar time to equilibrium
-
-- Older cohort delays group equilibrium
-
-- Cohort anti-preference increases the threshold for full spread
-
-## Language change
-
-- Language change is gradual (Cain Ryskin 2023)
-
-- Language change in this model changes very quickly
-
-## Language learning over the lifespan
-
-- Verb bias stuff?
-
-## Previous models
-
-- Consisted of a uniform population, built in a bias towards a specific grammar
-
-- Variation among the population, no bias towards a specific grammar
-
-- Opinion dynamics models?
+This agent-based model expanded upon previous models of language change by including group variation in learning rates and the addition of age-related dynamics. 
+It also excluded the built-in bias towards a specific grammar variant that previous models included.
+This model is similar to other agent-based models of language change [@beeksma2017probabilistic] or models of opinion dynamics [@castellano2009statistical; @galesic2021integrating], but differs with the addition of age-based learning rates.
 
 ## Extensions
 
-Network structure. Implement a small world network structure, where the parameters can be used to vary between fully random and a small world network. I suspect that the emergence of dialect sub-groups (fig. n) is an artifact of the preferential attachment structure, such that you have one well connected node with some other off-shoots. Based on this, there may be a section of the network that is only connected by one node, which will by structure block the grammar from spreading through to the distant group.
-However, if dialect sub-groups still appear when using a small world network, this would be interesting, though unlikely.
+**Network structure.** One extension would be to implement a small world network structure, where the parameters can be used to vary between fully random and a small world network. I suspect that the emergence of dialect sub-groups (Fig. 2B) is an artifact of the preferential attachment structure, such that you have one well connected node with some other small off-shoot groups. Based on this, there may be a section of the network that is only connected by one node, which will by structure block the grammar from spreading through to the distant group if that one node stops learning.
+The case for dialect sub-group formation would be stronger if dialect sub-groups still appear when using a small world network.
 
-Cohort-based network structure. In addition to a small world network, potentially implement a connection preference, such that nodes will be more connected to other nodes in the same cohort. Something similar to a stochastic block model?
+**Cohort-based network structure.** In addition to a small world network, another extension would be to implement a connection preference, such that nodes will be more connected to other nodes in the same cohort. More pronounced cohort structure may lead to innovator-reservoir dynamics similar to @turner2023minority.
 
-Generation modifications and node death, potentially integrating different types of learning (vertical, oblique, horizontal) since the current model just has one type. The anti-preference parameter was aimed at differentiating horizontal and vertical, such that nodes would prefer horizontal to vertical learning.
+**Generational mechanisms.** In the current model, there is no population shifts; each node is immortal and is never replaced. Future versions could implement generation dynamics and node death, such that nodes reproduce offspring nodes with a similar grammatical variant. Moreover, different types of learning (vertical, oblique, horizontal) could also be integrated, since the current model does not differentiate between them. The *willingness* parameter was aimed at differentiating horizontal and vertical, such that nodes would prefer horizontal to vertical learning.
 
-Currently, the learning algorithm is a linear reward-penalty algorithm (citation), which was one of the defaults from the original model and was tied to the speaking algorithm. One of the implications is that when a listener node fails to comprehend an utterance (the grammar it chooses to interpret does not match the utterance), it is punished and the internal state is updated away from the heard grammar. 
-Future iterations could change this learning algorithm, such that failure to comprehend is not punished.
+**Learning algorithm.** Currently, the learning algorithm is a linear reward-penalty algorithm [@bush1951mathematical; @bush1955stochastic; @yang2002knowledge], which was one of the defaults from the original model and was tied to the speaking algorithm. One implication of using this algorithm is that when a listener node fails to comprehend an utterance (the grammar it chooses to interpret does not match the utterance), it is punished and the internal state is updated away from the heard grammar. While this may reflect instances in the real world (confusion from misunderstanding as "punishment"), future iterations could change this learning algorithm, such that failure to comprehend is not punished.
 
-Conclusion.
+## Conclusion
 
-Multiple possible equilibria: full spread of one grammar variant or a population with dialect subgroups.
-
-Learning impacts time to equilibrium.
-
-If learning rate is based on age, the age gap between groups will modulate the impact of having more older members of the speech community when it comes to language change.
-
-Cohort anti-preference something.
+In conclusion, this project modified an agent-based model of language change to include parameters for learning rates, aging, and willingness to learn from out-group members.
+Our main finding was that learning rate impacts the time to equilibrium, where equilibrium is the final state that the system converges to, regardless of whether a grammatical variant fully spread through the population.
+This flexible definition allowed for inclusion of instances where dialect sub-groups formed in the population.
+Moreover, if learning rate is based on age, the age gap between groups will modulate the impact of having more older members of the speech community when it comes to language change.
+Lastly, willingness to listen to out-group members impacts the threshold for and speed of spread.
 
 # References
