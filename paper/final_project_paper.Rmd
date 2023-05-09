@@ -1,18 +1,20 @@
 ---
-title: "Aging and Language Change"
+title: "Teaching an old dog new tricks? Learning rates, aging, and language change"
 author: "Ellis Cain"
 output: pdf_document
+bibliography: bibliography.bib
+csl: apa.csl
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(tidyverse)
-library(wesanderson)
-library(patchwork)
 library(ggdist)
-library(jtools)
 knitr::opts_knit$set(root.dir = here())
+
+theme_set(theme_bw()) #+ theme(text =  element_text(size = 14)))
+`%nin%` = Negate(`%in%`)
 ```
 
 
@@ -20,104 +22,108 @@ knitr::opts_knit$set(root.dir = here())
 
 # Abstract
 
-Language change can be understood as representing the dynamic relationship between group-level and individual usage patterns. According to statistical learning, language learners are sensitive to the underlying distributional properties of language usage. Therefore, when usage patterns vary across time, it would be expected that the language acquisition of individuals will be impacted by the usage patterns that they experience during their lifetime. While previous research has shown differences in the language representation and cognitive capabilities over the lifespan (i.e., early vocab spurt, late cognitive decline), the impact of varying learning rates on language change is not well understood. Using an agent-based model of (syntactic) language change, this project aims to explore the interaction between learning rates and aging may impact diachronic changes in usage patterns of language.
-
+Language change can be understood as representing the dynamic relationship between group-level and individual usage patterns. 
+According to statistical learning, language learners are sensitive to the underlying distributional properties of language usage. 
+Therefore, when usage patterns vary across time, it would be expected that the language acquisition of individuals will be impacted by the usage patterns that they experience during their lifetime. 
+While previous research has shown differences in the language representation and cognitive capabilities over the lifespan (i.e., early vocab spurt, late cognitive decline), the impact of varying learning rates on language change is not well understood. Using an agent-based model of (syntactic) language change, this project aims to explore the interaction between learning rates and aging may impact diachronic changes in usage patterns of language.
+**Main finding: impact on time to equilibrium**
 
 
 # Introduction
 
 ## Language change
 
-<!-- Languages change over historical time~\cite<e.g.,>{bybee2015language} in terms of their usage statistics across users \cite{michelQuantitativeAnalysisCulture2011}. Yet, little is known about how these changes impact the meaning representations of an individual language user.  -->
-<!-- The organization of lexico-semantic representations across the lifespan has been studied using word association data~\cite<e.g.,>{dedeyneSmallWorldWords2019}.  -->
-<!-- Dubossarsky and colleagues \citeyear{dubossarskyQuantifyingStructureFree2017} analyzed lexical association networks and found that their organization changes over time. Namely, they observed a U-shaped developmental trajectory: networks are small and sparse (e.g., reduction of average shortest path length and entropy) during language acquisition (10--18 y.o.), they are dense and well-connected in mid-life (e.g., increased in-degree and out-degree), and then they become sparse again, with a larger proportion of isolated, peripheral nodes, in late-life (e.g., reduced in/out degree, increased entropy).  -->
+Language can be viewed as a complex adaptive system, where it is a system of speakers in a speech community, whose behavior is based on past interactions, which then influence future behaviors [@five2009language]. 
+Namely, individual usage patterns form the collective language usage patterns, then future individuals learn from these collective usage patterns. 
+Figure 1 below shows an example of this feedback loop between collective usage patterns and individual language usage.
 
-## Verb bias example
+It has been demonstrated before that language changes over historical time in terms of their collective usage statistics across users [@bybee2015language; @michelQuantitativeAnalysisCulture2011]. 
+Yet, little is known about the relationship between changes in collective usage patterns and the meaning representations of individual language users.
 
-<!-- Verb bias stuff w/ Rachel  -->
+![Example of the feedback loop in the complex adaptive system.](interaction_fig){width=35%}
 
-## Aging
+## Language learning
 
-<!-- In addition to age-related differences in lexico-semantic organization, previous studies have used electroencephalography (EEG) to explore the relationship between lexico-semantic processing and aging~\cite<e.g.,>{federmeier2010age, wlotkoPredictNotPredict2012}. Some signatures of predictive processing (e.g., increased anterior positivity in response to a word that is less closely related to a preceding cue) are reduced in older adults, suggesting that aging may be related to changes in neural mechanisms of prediction and/or in the predictability relationships among words and meanings. -->
+- Ryskin verb bias
 
-## Previous models of language change
+- Brysbaert
 
-Beeksma et al., 2017
+- Castro paper
 
-Troutman et al., ?
+## Aging and language
 
+The organization of lexico-semantic representations across the lifespan has been studied using word association data [@dedeyneSmallWorldWords2019].
+@dubossarskyQuantifyingStructureFree2017 analyzed lexical association networks and found that their organization changes over time. 
+Namely, they observed a U-shaped developmental trajectory: networks are small and sparse (e.g., reduction of average shortest path length and entropy) during language acquisition (10--18 y.o.), they are dense and well-connected in mid-life (e.g., increased in-degree and out-degree), and then they become sparse again, with a larger proportion of isolated, peripheral nodes, in late-life (e.g., reduced in/out degree, increased entropy). 
+
+In addition to age-related differences in lexico-semantic organization, previous studies have used electroencephalography (EEG) to explore the relationship between lexico-semantic processing and aging [@federmeier2010age; @wlotkoPredictNotPredict2012]. 
+Some signatures of predictive processing (e.g., increased anterior positivity in response to a word that is less closely related to a preceding cue) are reduced in older adults, suggesting that aging may be related to changes in neural mechanisms of prediction and/or in the predictability relationships among words and meanings.
 
 
 # Model
 
 ## Overview
 
-I aim to explore how potential changes in learning rates across the lifespan may impact overall population-level patterns of language change. 
-The model will explore the usage and spread of a grammatical variant throughout a population.
-For example, the past tense ending has some variation, either appearing as "-t" or "-ed", such as in "learnt" or "learned". [**verb bias example**]
-*To define: learn / learning rates*
-The following main assumptions are based on those found in Beeksma et al. and Troutman et al.:
+The original language change model from @troutman2008social models the usage and spread of a grammatical variant throughout a population, such as a past tense ending ("-t" or "ed", as in "burnt" or "burned").
+I modified the model such that each language user in the community has a learning rate that can be impacted by their age, which allows for an exploration of how changes in learning rates across the lifespan impact the overall collective-level patterns of language change.
 
-1. Language learning is based on imitating others, though this may change over the lifespan.
+The model's assumptions are as follows, modified from @beeksma2017probabilistic and @troutman2008social. 
 
-    - E.g., individuals may learn quickly early on, but slow down as they age.
+1. Language learning is based on imitating others.
 
-2. There are variations in preference between individuals.
+2. Learning rates may change over the lifespan.
 
-    - E.g., some individuals learn more quickly than others.
+3. There are variations between individuals.
 
-3. Language can be influenced by external factors.
+4. Language can be influenced by external factors.
 
-    - E.g., more willing to learn from in-group members, natural bias towards a given variant.
+5. Language change has multiple stable equilibrium (*no set outcome*).
 
-With this model, the main outcome patterns are as follows (adapted from Troutman et al.):
+Here, equilibrium refers to when the community ceases to experience change in individuals' preference for one grammar or the other. 
+For example, one equilibrium could be all language users only using Grammar 1, while another equilibrium could consist of half of the users using Grammar 1 and the other half using Grammar 0, which would correspond to a community with multiple dialect sub-groups.
 
-1. S-shaped curve in usage patterns: Change happens slowly, then proceeds rapidly before slowing down again.
+With this model, the main outcome measures will be:
 
-2. Intra-speaker variation: Change is gradual and there is a period of intra-speaker variation.
+1. Final state of the system: *mean state of nodes in the population.*
 
-3. Categorical norms: With competition, speakers move toward categorically using just one of the competing variants.
-
-4. Multi-stability: Language change can have multiple stable outcomes. **Additionally, some variation in language usage may co-exist. (Verb bias example)**
-
-5. Threshold problem: Initially rare variants may manage to spread through entire speech communities.
+2. Time to equilibrium: *the first time step that the group reaches that mean state.*
 
 ## Model description
 
-This model is based on the language change model from Troutman et al., implemented in netlogo.
+The model initializes a preferential attachment network, where each node in the network represents a language user. 
+There are two grammar variants, which are coded as 0 or 1, and are distributed throughout the population based on a specified percentage.
+Figure 2 shows an example of the preferential attachment network.
 
-The model consists of a preferential attachment network, where each node represents a language user. There are two grammar variants, which are coded as 0 or 1.
+![Example of the type of network generated in the model.](example_network){width=35%}
 
-Nodes have the following properties; state, original state, spoken state, age, gamma, and cohort.
-State represents the node's current grammar state, ranging from [0,1], which will influence their likelihood to use one of the two grammar variants. It can be understood as the bias towards a specific grammar (e.g., node with state of 0.25 would be biased towards Grammar 0).
-Original state represents their initially assigned grammar state.
-Spoken state represents the output of each node's speech, as (grammar) 0 or 1.
-The speaking process will be detailed in the *dynamics* section.
-Each node also has an age, that increases by 1 each tick, and a gamma value, which serves as their learning rate (step size).
-Higher gamma values (0.04) mean that the node will adjust their state more when listening, as opposed to a lower gamma (0.01).
-Each node also has a cohort or age group, which is either 1 or 2. This is fixed from the start.
+Nodes have the following properties; state, spoken state, age, cohort, and gamma.
+*State* represents the node's current grammar state, ranging from [0,1], which influences their likelihood to use one of the two grammar variants. 
+It can be understood as the bias towards a specific grammar (e.g., node with state of 0.25 would be biased towards Grammar 0 when speaking).
+*Spoken state* represents the output of each node's speech, as (grammar) 0 or 1.
 
-For initialization, the model uses [**what implementation**] to generate the preferential attachment network with a specified number of nodes. **Comment from Troutman paper?**
-Grammar is distributed throughout the network based on the specified percentage of grammar 1.
+The node's *age* should be self-explanatory, and it increases by 1 each tick.
+During initialization, the age of the nodes can be distributed according to a uniform or normal distribution.
+Likewise, there are two possible *cohort*s, which are initialized at the start.
+The cohort ages can be specified, such that Cohort 1 starts at *age = 0* and Cohort 2 starts at *age = 50*.
+Moreover, the grammars can be distributed at different percentages for each cohort, such that Cohort 1 starts with 25\% using Grammar 1 and Cohort 2 starts with 50\% using Grammar 1.
+Lastly, *anti-preference* can be specified, such that for each "communication", a given node has a chance to ignore out-group members.
 
-Next, the gamma, age, and cohort attributes of the nodes are initialized.
-If gamma is deterministic, the gamma values for all of the nodes will be set to the specified value.
-If gamma is probabilistic, the gamma values will be generated using a normal distribution centered around the initial gamma value, with a specified standard deviation.
-If gamma is set to be based on age, it will be determined by the "learning curve". 
-The learning curve describes the (power law) relationship between age and learning rate, and is as follows:
+*Gamma* is the learning rate of a given node. 
+Higher gamma values (0.08) mean that the node will adjust their state more when listening, as opposed to a lower gamma (0.01).
+It can be initialized according to a uniform or normal distribution, or it can be set to decrease with age.
 
-$y = qc(x^{a})+b$
+## Model dynamics 
 
-where $q$ indicates whether the learning rate increases ($+1$) or decreases ($-1$) with age ($x$). 
-The constant $c$ shrinks the function to the proper range, and is set to $c = 0.05$. 
-The variable $x$ is the normalized age of a given node, such that it is within [0,1].
-The variable $a$ represents the "cost" of learning, such that higher "costs" ($a=3$) indicate slow initial change which increases quickly when $x$ is closer to 1, and lower "costs" ($a=0.25$) indicate a quick initial change that slows down later on. 
-$b$ is the initial value for gamma.
-Graphs for the increasing and decreasing learning curves can be seen below:
+There are three main steps in the dynamics of the model: speaking, listening, and aging.
 
-**TO UPDATE: Growth curve, just decreasing now.**
+Regarding *speaking*, each node asynchronously generates an 'utterance', which consists of a discrete output (either 0 or 1, think of 'burnt' or 'burned'). This is based on a logistic curve that relates a node's internal state (weight of using Grammar 1) to the probability of using Grammar 1.
 
-```{r gamma-plot, echo = F, fig.height = 3}
+Regarding *listening*, all of the connected neighboring nodes will listen and use a linear reward-penalty algorithm to update their state [@bush1951mathematical; @bush1955stochastic; @yang2002knowledge].
+For this, they select a grammar that will be used to interpret the utterance (0 or 1). If the listener's selected grammar matches the heard utterance, they successfully interpret the utterance and update their internal state towards the heard state, otherwise, it will be updated away from the heard state.
+Here, the gamma parameter modifies the step size that the listener node takes when they update their internal state.
+As previously mentioned, if *anti-preference* is specified, there may be a chance that a given node does not update their internal state if the speaker is a member of the other cohort.
+
+```{r gamma-plot, echo = F, fig.align = 'center', fig.height = 2.5, fig.width = 5, fig.cap = "Graph of learning curve, which describes how learning rate may change with age. Colors represent different perseverance values."}
 gamma.function = function(a, b, age, constant){
     return ( constant * (age^a) + b )
 }
@@ -217,119 +223,41 @@ df2 |>
     theme_bw()+
     xlab("Proportional age (x)")+
     ylab("Gamma")+
-    scale_color_brewer(name = "Perseverance (a)", palette = 5)+
-    ggtitle("Learning curve")
+    scale_color_brewer(name = "Perseverance (a)", palette = 5)
 
 rm(high.cost, higher.cost, low.cost, normal.cost, lower.cost)
 ```
 
-The number of cohorts is decided by specifying the percentage of Group 2.
-The cohorts are initialized such that their ages are either deterministic (set to the specified age) or probabilistic (centered around the specified age, with a specified standard deviation).
-When gamma is based on age, any variation in gamma will be determined by the setting of age distribution (deterministic or probabilistic), since they are generated from the learning curve.
+Regarding *aging*, every node ages with each tick.
+If gamma is set to decrease with age, it decreases based on a "learning curve" function.
+This "learning curve" is defined using a power law relationship between *age* and *gamma* (learning rate), and is as follows:
 
-## Dynamics
+$y = -0.05(x^{a})+0.005$
 
-Go procedure:
-
-- Communication
-
-    - Alpha parameter as bias in favor of grammar 1
-    - In these analyses, Alpha will be set to 0. No bias for grammar 1.
-
-- Aging
-
-    - Age increases by 1 each tick
-    
-    - Gamma is modified by the specified parameters
-    
-Gamma modification:
-
-- Influence is specified at the start: increases, decreases, remains constant
-
-- Every 100 ticks, the gamma is modified by a specified constant, based on the direction
-
-- Minimum gamma is 0; potential for some agents to stop learning
+The variable $x$ is the normalized age of a given node, such that it is within [0,1].
+The variable $a$ represents the "perseverance" of learning, such that higher perseverance values ($a=3$) indicate slow initial change that speeds up closer to x = 1, and lower perseverance values ($a=0.25$) indicate a quick initial change that slows down later on. 
+Graphs for the (decreasing) learning curves can be seen in Fig. 3.
 
 
+<!-- Communication: -->
 
+<!-- - Speaking -->
 
-<!-- # ```{r gamma-plot-sigmoid, echo = F} -->
-<!-- # gamma.function = function(a, age, constant){ -->
-<!-- #     return ( constant / ( 1 + exp(-(2*age - 1)*10*a)  )) -->
-<!-- # } -->
-<!-- #  -->
-<!-- # ## Normal cost curve -->
-<!-- # a.exp = 1 -->
-<!-- # initial.gamma = 0.05 -->
-<!-- # front.constant = 0.05 -->
-<!-- #  -->
-<!-- # normal.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
-<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
-<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
-<!-- #  -->
-<!-- # # High cost  -->
-<!-- # a.exp = 2 -->
-<!-- # front.constant = 0.05 -->
-<!-- #  -->
-<!-- # high.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
-<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
-<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
-<!-- #  -->
-<!-- # # Higher cost  -->
-<!-- # a.exp = 3 -->
-<!-- # front.constant = 0.05 -->
-<!-- #  -->
-<!-- # higher.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
-<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
-<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
-<!-- #  -->
-<!-- # # Low cost  -->
-<!-- # a.exp = 0.5 -->
-<!-- # front.constant = 0.05 -->
-<!-- #  -->
-<!-- # low.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
-<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
-<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
-<!-- #  -->
-<!-- # # Lower cost  -->
-<!-- # a.exp = 0.25 -->
-<!-- # front.constant = 0.05 -->
-<!-- #  -->
-<!-- # lower.cost <- data.frame(age = seq(0,1,0.01)) |>  -->
-<!-- #     mutate(gamma = gamma.function(a.exp, age, front.constant), -->
-<!-- #            a = a.exp, initial = initial.gamma, constant = front.constant) -->
-<!-- #  -->
-<!-- # normal.cost |>  -->
-<!-- #     rbind(high.cost, higher.cost, low.cost, lower.cost) |>  -->
-<!-- #     ggplot(aes(x = age, y = gamma, group = a, color = a))+ -->
-<!-- #     geom_point()+ -->
-<!-- #     geom_line()+ -->
-<!-- #     theme_bw()+ -->
-<!-- #     xlab("Proportional age")+ -->
-<!-- #     ylab("Gamma parameter")+ -->
-<!-- #     ggtitle("Learnability parameter changing with age, sigmoid") -->
-<!-- #  -->
-<!-- # ``` -->
+<!--     - Original model had variation in whether or not the agents preferred a discrete grammar; this model will take that as granted -->
 
-Communication:
+<!--     - Use a logistic curve, such that agents will produce an utterance that is either 0 or 1. -->
 
-- Speaking
+<!-- - Listening -->
 
-    - Original model had variation in whether or not the agents preferred a discrete grammar; this model will take that as granted
-    
-    - Use a logistic curve, such that agents will produce an utterance that is either 0 or 1.
+<!--     - Original model had variation in the listening function, either threshold (if neighbors above a threshold value, switch to that grammar), individual (select one neighbor, choose that grammar), or reward (explained below) -->
 
-- Listening
+<!--         - This model will take the third, reward-based algorithm as granted -->
 
-    - Original model had variation in the listening function, either threshold (if neighbors above a threshold value, switch to that grammar), individual (select one neighbor, choose that grammar), or reward (explained below)
-    
-        - This model will take the third, reward-based algorithm as granted
-    
-    - Hearing node will pick a grammar that will be used to interpret utterances, either 0 or 1
-    
-    - If the selected grammar matches the heard grammar, it will update its grammar towards the heard state
-    
-    - If it fails, it will be updated away from the heard state
+<!--     - Hearing node will pick a grammar that will be used to interpret utterances, either 0 or 1 -->
+
+<!--     - If the selected grammar matches the heard grammar, it will update its grammar towards the heard state -->
+
+<!--     - If it fails, it will be updated away from the heard state -->
 
 # Results
 
@@ -337,306 +265,318 @@ Communication:
 <!-- Added: formation of dialect subgroups? -->
 <!-- Added: affect of gamma (learning rate), changing gamma with age, two age groups, preference for own group -->
 
-Influence of gamma with only one group:
+Each model configuration was run 50 times, with 1000 steps total per run. The networks were generated with 40 nodes, based on the original Troutman et al. paper.
+Using this agent-based model, I looked at the impact of learning rate and learning perseverance, aging and cohort age difference, and cohort anti-preference.
+Again, 'equilibrium' will refer to the stable state that the system reaches. 
 
-Low vs high gamma:
+## Impact of learning rate
 
-*Use this style of summary graph*
-
-```{r gamma-variations, echo = F}
-gvdf <- read_csv(here("paper",
-                      "processed_data",
-                      "gvdf_final-only.csv"),
-                 show_col_types = F)
-
-
+```{r plot1.1, echo = F,  warning=F, message=F, fig.align = 'center', fig.height=3, fig.width = 5, fig.cap = "Final state of the langauge community, as measured by the mean state of nodes. Color of lines represents the gamma, or learning rate, of the nodes. Gamma is constant throughout the lifespan. Bars represent standard error."}
+gvdf_proc <- read_csv(here("paper","processed_data","gvdf_proc.csv"), show_col_types = F)
+gvdf <- read_csv(here("paper","processed_data","gvdf_final-only.csv"), show_col_types = F)
 ggplot(gvdf,
        aes(x = percent_grammar_1, y = mean_state_of_nodes,
-                 color = factor(initial_gamma),
-                 group = factor(initial_gamma)))+
-    theme_bw()+
-    xlab("Initial percentage of Grammar 1")+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    scale_color_brewer(name = "Initial gamma",# type = "qual",
-                       palette = 5)+ 
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ggtitle("Impact of Gamma on final state")+
-    geom_text(aes(x = 80, y = 0.9, label = "Grammar 1\nas majority"))+
-    geom_text(aes(x = 15, y = 0.1, label = "Grammar 0\nas majority"))
-
-# no difference?
-
-
+           color = factor(initial_gamma),
+           group = factor(initial_gamma)))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Gamma",# type = "qual",
+                     palette = 5)+ 
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  geom_text(aes(x = 80, y = 0.8), label = "Grammar 1\nas majority", color = "black")+
+  geom_text(aes(x = 20, y = 0.2), label = "Grammar 0\nas majority", color = "black")+
+  geom_text(aes(x = 61, y = 0.5), label = "<- Dialect\nsubgroups", color = "black")
 ```
 
-Individual runs:
+Figure 4 shows the impact of learning rate on the final state of the networks. When the initial percentage of Grammar 1 is low (< 35\% of nodes), it rarely spreads through the population, as almost all of the runs end with grammar 0 as the majority. On the flip side, when Grammar 1 is present in the majority of agents (> 60\% of nodes), it will spread through the network the majority of the time. However, when it is present in half of the nodes, dialect subgroups will emerge (Fig. 5), where different areas of the network will settle on different grammars.
 
-```{r gamma-variations-alt, echo = F}
+![Dialect sub-groups.](dialect_subgroups){width=45%}
+
+For the variable that we manipulated between runs, gamma, there is no systematic impact on the final state that the system reaches. Regardless of how quickly nodes learn, the final result is mainly determined by the initial percentage of Grammar 1.
+However, when we look at the individual runs, we see a marked difference as gamma is manipulated.
+Figure 6 plots the mean state of the system over time for individual runs, based on various configurations of gamma and initial percent of Grammar 1.
+Namely, we see that while the equilibrium reached by the system does not differ between different gamma values, the speed at which it reaches that equilibrium decreases as gamma increases.
 
 
-
-```
-
-Probabilistic gamma:
-
-```{r gamma-probabilistic-alt, echo = F}
-lndf2 <- read_csv(here("code",
-                      "Language Change prob-gamma-final-only-table.csv"),
+```{r gamma-variations-alt, echo = F,  warning=F, message=F, fig.align = 'center', fig.height=4, fig.width = 7, fig.cap = "Each line represents the average state of the system for individual model runs. Here, the equilibria can be seen when the mean state flattens out. As gamma increases, the time to the equilibrium decreases. Rows faceted by initial percentage of Grammar 1, columns by the gamma value."}
+gvdf_full <- read_csv(here("code",
+                      "Language Change Varying Gamma Alpha Percent-table.csv"),
                  show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
-## TO UPDATE
+  janitor::clean_names() |> 
+    select(-c(age_sd, cohort1_age, deterministic_age, initial_gamma_based_on_age, gamma_cost, gamma_with_age,
+              gamma_sd, deterministic_gamma, num_nodes, update_algorithm, logistic, threshold_val, sink_state_1, 
+              alpha, percent_cohort2, cohort2_age, chance_listen_to_outgroup, cohort_based_grammar, c1_percent_grammar_1,
+              c2_percent_grammar_1, simulation_limit)) |> 
+    filter(step %in% seq(0, 1000, 10)) |> 
+    filter(percent_grammar_1 %in% c(40, 50, 60)) |> 
+    mutate(step = step / 1000)
 
-# ggplot(lndf2, aes(x = step, y = mean_state_of_nodes, group = run_number,
-#                  color = factor(initial_gamma)))+
-#     geom_line(alpha = 0.5)+
-#     scale_color_brewer(name = "Initial gamma", type = "qual" ,
-#                        palette = 2)+
+ggplot(gvdf_full, aes(x = step, y = mean_state_of_nodes, group = run_number, color = as.factor(initial_gamma)))+
+    geom_line(alpha = 0.25)+
+    facet_grid(percent_grammar_1~initial_gamma)+
+    scale_color_brewer(type = "qual", palette = 2)+
+    theme(legend.position = "none")+
+    ylab("Mean state of nodes")+
+    scale_y_continuous(breaks = c(0, 0.5, 1))+
+    xlab("Step (proportional)")+
+    scale_x_continuous(breaks = c(0, 1))
+
+
+```
+
+Figure 7 shows the proportional time to equilibrium for different values of gamma. The initial percentage of Grammar 1 does not impact the time to equilibrium.
+When the learning rate is the slowest (gamma = 0.01), the system will reach equilibrium at a little less than 400 steps (0.4), while the fastest learning rate will cause the system to reach equilibrium in about 100 steps. As gamma increases, the decrease in time to equilibrium also decreases as well, seemingly approaching a limit of information transfer through the system.
+
+```{r plot1.2, echo = F,  warning=F, message=F, fig.align = 'center', fig.height=2.5, fig.width = 5, fig.cap = "Time to equilibrium across the different values of gamma. Bars represent standard error."}
+ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
+                      group = factor(initial_gamma)))+
+  xlab("Gamma")+
+  ylab("Time to equilibrium (%)")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", fill = "lightblue", color = "black")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.0025)
+# 
+# ggsave(filename = "test3.png",
+#        dpi = 600, units = "in",
+#        width = 5, height = 4)
+```
+
+In summary, gamma (learning rate) impacts the time to equilibrium of the system, and this impact decreases as gamma increases.
+
+## Learning perseverance
+
+For these next simulations, gamma will be determined by age, and the perseverance of learning (rate of decrease) will be manipulated. Refer to Fig. 3 for the relationship between age and gamma, where decreasing perseverance increases the speed at which learning rate decreases with age.
+Figure 8 shows the impact of learning perseverance on the mean state of the nodes at the end of the simulation. Similar to before, there does not seem to be a systematic relationship between perseverance and the final state.
+
+```{r vosodp_data_import, echo = F}
+vgp_proc <- read_csv(here("paper","processed_data","vgp_proc.csv"), show_col_types = F)
+vgp <- read_csv(here("paper","processed_data","vgp_final-only.csv"), show_col_types = F)
+```
+
+```{r plot4.1, echo = F,  warning=F, message=F, fig.align = 'center', fig.height=3, fig.width = 5, fig.cap = "Impact of learning perseverance on the final outcome of the system."}
+ggplot(vgp,
+       aes(x = percent_grammar_1, y = mean_state_of_nodes,
+           color = factor(perseverance),
+           group = factor(perseverance)))+
+  theme_bw()+
+  xlab("Initial percentage of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Perseverance",# type = "qual",
+                     palette = 5)+ 
+  stat_summary(fun = mean, geom = "point")+
+  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+    theme(legend.position = c(0.2, 0.5))
+
+```
+
+However, when we plot the relationship between perseverance and time to equilibrium (Fig. 9), we see that most of the learning rate curves (0.5 $\leq$ perseverance $\leq$ 3), the time to equilibrium is very similar. Only when the learning rate quickly decreases (perseverance = 0.25) does the time to equilibrium increase. The range of time to equilibrium for these persevernace variations are similar in range to when gamma is varied.
+
+```{r plot4.2, echo = F,  warning=F, message=F, fig.align = 'center', fig.height=2.5, fig.width = 5, fig.cap = "Time to equilibrium across the different values of perseverance, with standard error bars."}
+ggplot(vgp_proc, aes(x = factor(perseverance), y = eq_percent,
+                       group = factor(perseverance)))+
+  xlab("Perseverance of learning")+
+  ylab("Time to equilibrium (%)")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", fill = "turquoise", color = "black")+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)
+# 
+# ggsave(filename = "test4.png",
+#        dpi = 600, units = "in",
+#        width = 5, height = 4)
+```
+
+In summary, we see little difference of perseverance's impact on time to equilibrium when perseverance is greater than 0.5.
+
+## Aging and cohort equilibria
+
+For this next set of comparisons, gamma will be set to decrease with age, with perseverance set at 1. In the simulations, there are two age cohorts, which the age gap between is varied. Similar to before, the initial starting percentage of Grammar 1 will be varied as well. 
+<!-- Only look at time to equilibrium and cohort equilibria. -->
+
+Figure 10 shows the time to equilibrium for different combinations of the initial percentage of Grammar 1 and population composition (percent of nodes in cohort 2). 
+Cohort 1 started at age 0, so the different facets represent the age gap between the two cohorts.
+First, as the age difference between cohorts increases, the simulations where Grammar 1 was used initially by half the population increasingly takes longer on average to reach equilibrium.
+This effect generally seems to be more pronounced for the simulations where the majority of nodes were cohort 2.
+Then, when the initial percentage is at an extreme (10\% or 90\%), the time to equilibrium increases as well and has a larger impact on simulations with majority cohort 2.
+
+```{r tac_data_import, echo = F}
+tcg_proc <- read_csv(here("paper","processed_data","tcg_proc.csv"), show_col_types = F)
+tcg_group_proc <- read_csv(here("paper","processed_data","tcg_group_proc.csv"), show_col_types = F)
+tcg <- read_csv(here("paper","processed_data","tcg_final-only.csv"), show_col_types = F)
+tcg_group <- read_csv(here("paper","processed_data","tcg_final-only-by-cohort.csv"), show_col_types = F)
+```
+
+```{r plot5.2, echo = F,  warning=F, message=F, fig.height=2.5, fig.width = 7, fig.align='center', fig.cap = "Time to equilibrium as a function of initial percentage of Grammar 1, across different population compositions. Faceted by cohort 2 age, which is the age gap between the two cohorts. "}
+ggplot(tcg_proc |> filter(percent_grammar_1 %nin% c(35, 45)), 
+       aes(x = percent_grammar_1, y = eq_percent,
+                     color = factor(percent_cohort2),
+                     group = factor(percent_cohort2)))+
+    xlab("Initial percentage of Grammar 1")+
+    ylab("Time to equilibrium (%)")+
+    theme_bw()+
+    stat_summary(fun.data = mean_se, geom = "errorbar", width = 5)+
+    stat_summary(fun = mean, geom = "line", linetype = "dashed")+
+    stat_summary(fun = mean, geom = "point")+
+    scale_color_brewer(name = "Percent\ncohort 2", #type = "qual",
+    palette = 1)+
+    facet_grid(~cohort2_age)
+```
+
+Figure 11 shows the separate equilibrium for each cohort, based on the initial percentage of cohort 2.
+The time to equilibrium seems to be generally consistent across the different variations, regardless of the age gap.
+Cohort 2, however, takes longer to reach equilibrium as they become more numerous in the population.
+Then, as the age gap increases, this impact on time to equilibrium increases as well.
+
+```{r plot5.4, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7, fig.align='center', fig.cap = "Time to equilibrium for the different age cohorts, faceted by cohort 2 age."}
+ggplot(tcg_group_proc |> 
+         mutate(type = if_else(type == "cohort1_equilibrium", "Cohort 1", "Cohort 2")) ,
+       aes(x = factor(percent_cohort2), y = eq_percent,
+                     fill = factor(cohort2_age),
+                     group = factor(percent_cohort2)))+
+  xlab("Cohort 2 percentage")+
+  ylab("Time to equilibrium (%)")+
+  theme_bw()+
+  stat_summary(fun = mean, geom = "bar", color = "black")+
+  scale_fill_brewer(name = "Group 2 age", type = "qual",
+                    palette = 1)+ 
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
+  facet_grid(type~cohort2_age)+
+  theme(legend.position = "none")
+# 
+# ggplot(tcg_group_proc |> 
+#            filter(percent_grammar_1 %nin% c(35, 45))|> 
+#          mutate(type = if_else(type == "cohort1_equilibrium", "Cohort 1", "Cohort 2")) , 
+#        aes(x = percent_grammar_1, y = eq_percent,
+#                      color = factor(percent_cohort2),
+#                      group = factor(percent_cohort2)))+
+#     xlab("Initial percentage of Grammar 1")+
+#     ylab("Time to equilibrium (%)")+
 #     theme_bw()+
-#     facet_grid(percent_grammar_1~initial_gamma)+
-#     ggtitle("Probabilistic gamma / learning rates")
-
-ggplot(lndf2, aes(x = percent_grammar_1, y = mean_state_of_nodes,
-                 color = factor(initial_gamma)))+
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    xlab("Initial percentage of Grammar 1")+
-    scale_color_brewer(name = "Initial gamma",# type = "qual" ,
-                       palette = 5)+
-    theme_bw()+
-    # facet_grid(percent_grammar_1~initial_gamma)+
-    ggtitle("Probabilistic gamma / learning rates", subtitle = "Gamma SD = 0.02, Grammar 1 bias = 0.005 (weak)")
+#     stat_summary(fun.data = mean_se, geom = "errorbar", width = 5)+
+#     stat_summary(fun = mean, geom = "line", linetype = "dashed")+
+#     stat_summary(fun = mean, geom = "point")+
+#     scale_color_brewer(name = "Percent\ncohort 2", #type = "qual",
+#     palette = 1)+
+#     facet_grid(type~cohort2_age)
 ```
 
+In summary, the older cohort slows down the time to equilibrium, and as the age gap increases, the impact on time to equilibrium increases as well.
 
-Aging and gamma:
+## Cohort anti-preference
 
-```{r age-mod-gamma, echo = F}
-lndf3 <- read_csv(here("code",
-                      "Language Change age-mod-gamma-final-only-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
+Brief explanation:
 
-# ggplot(lndf3, aes(x = step, y = mean_state_of_nodes, group = run_number,
-#                   color = factor(percent_grammar_1)))+
-#     geom_line(alpha = 0.5)+
-#     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
-#                        palette = 3)+
-#     theme_bw()+
-#     facet_grid(~percent_grammar_1)+
-#     ggtitle("Age (deterministic) modifies gamma / learning rate")
+What is kept constant, what varies:
 
-ggplot(lndf3, aes(x = percent_grammar_1, y = mean_state_of_nodes))+
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    xlab("Initial percentage of Grammar 1")+
-    scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
-                       palette = 3)+
-    theme_bw()+
-    ggtitle("Gamma determined by age (deterministic)", subtitle  = "Linear positive relationship")
+Description of plot one:
+
+
+```{r cp_data_import, echo = F}
+pref_proc <- read_csv(here("paper","processed_data","preference_proc.csv"), show_col_types = F)
+pref_types <- read_csv(here("paper","processed_data","preference_final_state.csv"), show_col_types = F)
 ```
 
+```{r plot7.1, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(pref_types |> filter(type == "Overall mean"), aes(x = percent_grammar_1, y = final_state,
+             color = factor(chance_listen_to_outgroup),
+             group = factor(chance_listen_to_outgroup)))+
+  theme_bw()+
+  xlab("Initial percent of Grammar 1")+
+  ylab("Mean state of nodes")+
+  scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
+                     palette = 2)+ 
+  # scale_shape_manual(name = "type", values = c(14, 15, 16))+
+  # geom_point(alpha = 0.5)+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  stat_summary(fun = mean, geom = "point", size = 2)+
+  stat_summary(fun = mean, geom = "line")
 
-Age varies:
-
-```{r age-vary-mod-gamma, echo = F}
-lndf4 <- read_csv(here("code",
-                      "Language Change age-vary-mod-gamma-final-only-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
-
-# ggplot(lndf4, aes(x = step, y = mean_state_of_nodes, group = run_number,
-#                   color = factor(percent_grammar_1)))+
-#     geom_line(alpha = 0.5)+
-#     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" ,
-#                        palette = 3)+
-#     theme_bw()+
-#     facet_grid(age_sd~percent_grammar_1)+
-#     ggtitle("Age (probabilistic) modifies gamma / learning rate")
-
-ggplot(lndf4, aes(x = percent_grammar_1, y = mean_state_of_nodes, color = factor(age_sd)))+
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    xlab("Initial percentage of Grammar 1")+
-    scale_color_brewer(name = "Age SD",# type = "qual" ,
-                       palette = 5)+
-    theme_bw()+
-    # facet_wrap(~factor(age_sd))+
-    ggtitle("Gamma determined by age (probabilistic)", subtitle  = "Linear positive relationship")
-
-
-```
-
-```{r vary-growth-curve, echo = F}
-lndf5 <- read_csv(here("code",
-                      "Language Change vary-growth-curve-final-only-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
-
-ggplot(lndf5, aes(x = percent_grammar_1, y = mean_state_of_nodes, color = gamma_with_age))+
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    xlab("Initial percentage of Grammar 1")+
-    scale_color_brewer(name = "Relationship", type = "qual" ,
-                       palette = 3)+
-    theme_bw()+
-    # facet_grid(~gamma_with_age)+
-    ggtitle("Growth curve type", subtitle = "Gamma increases/decreases with age")
-
-
-```
-
-Varied cost curve
-
-```{r vary-growth-curve-cost, echo = F}
-lndf6 <- read_csv(here("code",
-                      "Language Change vary-growth-curve-cost-final-only-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
-
-ggplot(lndf6, aes(x = percent_grammar_1, y = mean_state_of_nodes,
-                  color = factor(gamma_cost)))+
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    xlab("Initial percentage of Grammar 1")+
-    scale_color_brewer(name = "Gamma cost",# type = "qual" ,
-                       palette = 5)+
-    theme_bw()+
-    facet_grid(gamma_with_age~.)+
-    ggtitle("Varied growth curve cost")
-
+# ggsave(filename = "test6.png",
+#        dpi = 600, units = "in",
+#        width = 6, height = 4)
 
 ```
 
 
-
-<!-- ```{r vary-growth-curve-decreases, echo = F} -->
-<!-- lndf6.5 <- read_csv(here("code", -->
-<!--                       "Language Change vary-growth-curve-decreases-table.csv"), -->
-<!--                  show_col_types = F, skip = 6) |>  -->
-<!--     janitor::clean_names() -->
-
-<!-- ggplot(lndf6.5, aes(x = step, y = mean_state_of_nodes, group = run_number, -->
-<!--                   color = factor(percent_grammar_1)))+ -->
-<!--     geom_line(alpha = 0.5)+ -->
-<!--     scale_color_brewer(name = "Grammar 1\nstarting percentage", type = "qual" , -->
-<!--                        palette = 3)+ -->
-<!--     theme_bw()+ -->
-<!--     facet_grid(gamma_cost~percent_grammar_1)+ -->
-<!--     ggtitle("Varied growth curve cost", subtitle = "Decreasing gamma only") -->
+Description of plot two:
 
 
-<!-- ``` -->
+```{r plot7.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
+ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
+                           color = factor(chance_listen_to_outgroup),
+                           group = factor(chance_listen_to_outgroup)))+
+  xlab("Percent Grammar 1")+
+  ylab("Time to equilibrium (%)")+
+  theme_bw()+
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
+  stat_summary(fun = mean, geom = "point", size = 2)+
+  stat_summary(fun = mean, geom = "line", linetype = "dashed")+
+  scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
+                    palette = 2)+ 
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  ggtitle("Anti-preference and time-to-equilibrium")
 
-
-Influence of two groups:
-
-```{r two-groups, echo = F}
-
-lndf7 <- read_csv(here("code",
-                      "Language Change half-split-age-final-only-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
-
-ggplot(lndf7, aes(x = percent_grammar_1, y = mean_state_of_nodes,
-                  color = factor(group2_age)))+
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    xlab("Initial percentage of Grammar 1")+
-    scale_color_brewer(name = "Group 2 age", type = "qual" ,
-                       palette = 3)+
-    theme_bw()+
-    facet_grid(percent_group2~.)+
-    ggtitle("Two age groups")
+# ggsave(filename = "test7.png",
+#        dpi = 600, units = "in",
+#        width = 8, height = 4)
 
 ```
 
-Group preference:
-
-```{r cohort-preference, echo = F}
-
-lndf8 <- read_csv(here("code",
-                      "Language Change cohort-preference-final-only-table.csv"),
-                 show_col_types = F, skip = 6) |> 
-    janitor::clean_names()
-
-ggplot(lndf8, aes(x = percent_grammar_1, y = mean_state_of_nodes,
-                  color = factor(chance_listen_to_outgroup)))+
-    stat_summary(fun = mean, geom = "point")+
-    stat_summary(fun = mean, geom = "line")+
-    stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
-    ylab("Mean state of nodes\nafter 1000 steps")+
-    xlab("Initial percentage of Grammar 1")+
-    scale_color_brewer(name = "Chance to listen\nto outgroup", type = "div",
-                       palette = 3)+
-    theme_bw()+
-    facet_wrap(~percent_group2)+
-    ggtitle("Willingness to listen to outgroup", subtitle = "Faceted by group 2 percent")
-
-```
-
-
-
-**Other things to consider: Time to equilibrium, emergence of dialect subgroups**
-**Growth curve cost?**
+In summary, cohort anti-preference will delay the equilibrium, and slightly impact final equilibrium.
 
 # Discussion
 
-Summarize the results, in the context of previous literature
+Summarize the results, in the context of previous literature:
 
-Comparison with previous model results
+- Learning rate impacts time to equilibrium, but not the final system outcome
 
-Life-long learning, language change
+- Except for extreme decay (0.25), majority of learning perseverance curves have similar time to equilibrium
+
+- Older cohort delays group equilibrium
+
+- Cohort anti-preference increases the threshold for full spread
+
+## Language change
+
+- Language change is gradual (Cain Ryskin 2023)
+
+- Language change in this model changes very quickly
+
+## Language learning over the lifespan
+
+- Verb bias stuff?
+
+## Previous models
+
+- Consisted of a uniform population, built in a bias towards a specific grammar
+
+- Variation among the population, no bias towards a specific grammar
+
+- Opinion dynamics models?
+
+## Extensions
+
+Network structure. Implement a small world network structure, where the parameters can be used to vary between fully random and a small world network. I suspect that the emergence of dialect sub-groups (fig. n) is an artifact of the preferential attachment structure, such that you have one well connected node with some other off-shoots. Based on this, there may be a section of the network that is only connected by one node, which will by structure block the grammar from spreading through to the distant group.
+However, if dialect sub-groups still appear when using a small world network, this would be interesting, though unlikely.
+
+Cohort-based network structure. In addition to a small world network, potentially implement a connection preference, such that nodes will be more connected to other nodes in the same cohort. Something similar to a stochastic block model?
+
+Generation modifications and node death, potentially integrating different types of learning (vertical, oblique, horizontal) since the current model just has one type. The anti-preference parameter was aimed at differentiating horizontal and vertical, such that nodes would prefer horizontal to vertical learning.
+
+Currently, the learning algorithm is a linear reward-penalty algorithm (citation), which was one of the defaults from the original model and was tied to the speaking algorithm. One of the implications is that when a listener node fails to comprehend an utterance (the grammar it chooses to interpret does not match the utterance), it is punished and the internal state is updated away from the heard grammar. 
+Future iterations could change this learning algorithm, such that failure to comprehend is not punished.
 
 Conclusion.
 
+Multiple possible equilibria: full spread of one grammar variant or a population with dialect subgroups.
 
-<!-- Old:  -->
-<!-- **a)** For my final project, I will be modifying the model from: Beeksma, M., de Vos, H., Claassen, T., Dijkstra, T., & van Kemenade, A. (2017). A Probabilistic Agent-Based Simulation for Community Level Language Change in Different Scenarios. *Computational Linguistics in the Netherlands Journal*, 7, 17-38. -->
+Learning impacts time to equilibrium.
 
-<!-- Their original goal was to simulate historical language change using an agent-based model. They used word order change as a case study, where the model included two potential word orders and two groups, that initially started out with a certain proportion of using the different word orders. They manipulated the learning rate, likelihood of interaction, location-bound dialects, and agent variation within the population. For the outcome, they measured the proportion of the two word orders over time. -->
+If learning rate is based on age, the age gap between groups will modulate the impact of having more older members of the speech community when it comes to language change.
 
-<!-- Their model consists of two populations of agents that all have individual language models, which influence their interactions. -->
-<!-- Each agent has a language model that determines their utterances; when they hear an utterance, it is added to their LM, which they draw from to produce their own utterances. Every step, two agents are selected at random to "interact" (speak and listen), which leads to them updating their language models. -->
+Cohort anti-preference something.
 
-<!-- Their main assumptions are as follows (paraphrased from their paper): -->
-
-<!-- 1. Language learning is based on imitating others. -->
-<!-- 2. Variability of an individual's language model is limited. -->
-<!-- 3. Language can be influenced by external factors (group membership, life expectancy, "norms"). -->
-
-<!-- I aim to explore how potential changes in learning rates across the lifespan may impact overall population-level patterns of language change. Based on the original paper, I have modified the assumptions of the model: -->
-
-<!-- 1. Language learning is based on imitating others, **though this may change over the lifespan and may depend on group membership**. -->
-<!-- 2. Variability of an individual's language model is limited. -->
-<!-- 3. Language can be influenced by external factors. -->
-
-<!-- Currently, I have their original model running, though the outputted graphs differ slightly. The 1st major step is to **modify the model such that agents "age", which changes their learning/sensitivity parameters.** For example, agents may initially be more willing to learn / sensitive to change, but as they "age", this rate will decrease.  -->
-<!-- The 2nd major step is to **modify the cross-interaction (between group interaction) such that learning will be dependent on group preference**. For example, young agents may be more likely to listen and learn from other young agents. -->
-<!-- The "stretch goal" is to **modify the model to represent meaning change (instead of word order).** Meaning change will be modeled similar to Kirby 2015, where language has forms {a, b, ...} and meanings {01, 02, 12, ...}. Agents will produce utterances that consist of a form and the intended meaning (i.e. "a01"). -->
-
-<!-- **b)** Similar to the model description above, the system decomposes into language and agents. The language consists of exemplars, which are all the possible utterances; in the original paper there were four possible combinations (two adverb types, two verb types), while the modified version will (potentially) consist of surface forms and meanings (see above). -->
-
-<!-- Each agent has an language model that contains various exemplars, and has an initial preference towards using one type of construction. After my modifications, each agent will also have an age and group preference. As the agents age, their learning rates will decrease based on a specified factor. With group preference, agents may be less likely to listen and learn from out-group members. -->
-
-<!-- Then, at each step, two agents are chosen at random to converse. One agent generates an utterance based on their internal language model, and the other agent hears and integrates that utterance into their language model (dependent on age and group preference). -->
-
-<!-- **c)** The main outcome measure is the proportion of types of utterances over time. I will do batch runs that vary the influence of age and group preference on learning rates. -->
-<!-- For the influence of age, "uniform" will be the default, where the learning rate is kept constant regardless of age. Potential variations could be a linear decrease in learning rate as age increases, or maybe a sigmoid function. -->
-<!-- For the influence of group preference, I plan to initially keep it as a constant value. I think it will be implemented as out-group learning rate, such that the default will be when learning-rate == out-group learning rate. Then, I can vary instances where the equality varies, such that the out-group learning rate is higher or lower than the overall learning-rate.  -->
-<!-- There will be another option, where this group preference (out-group learning rate) changes with age as well. -->
-
-<!-- **d)** I think with the first two goals (age, group preference), it seems like an exciting project looking at the influence of aging on language change. I'm not quite sure about implementing the meaning version of the model (which is why I put it as a stretch goal). For the basic word order version, the outcome measure is similar to the SIR-type models, where the main interest is how a certain type of idea spreads through a system over time. Language change, then, is just the overall prevalence of each type of word order. For the meaning version, though, I would have to implement some "mutation" factor, where the least used surface form mutates its meaning (i.e., "a01" is used least, so it would mutate to "a02"). Then, outcome measure would need to be changed to track both surface form and meaning (something like most frequent meaning per surface form, amount of meaning change per surface form). -->
+# References

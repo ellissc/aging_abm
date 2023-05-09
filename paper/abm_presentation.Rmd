@@ -34,6 +34,14 @@ theme_set(theme_bw() + theme(text =  element_text(size = 14)))
 ```
 
 
+<!-- Feedback: -->
+<!-- Modify assumptions: Individuals learn differently over the lifespan as an assumption -->
+<!-- Change probabilistic / deterministic to uniform or specified? -->
+<!-- Create an illustration of the dialect sub-groups -->
+<!-- Literature: opinion dynamics, zealots agents that don't change their opinions  -->
+<!-- Define equilibrium -->
+<!-- Other network structures  -->
+
 # Background literature
 
 ## Collective patterns of language usage
@@ -193,7 +201,7 @@ Represent language users
 
     - Speaking (asynchronous)
     
-    - Neighboring agents listen
+    - Connected nodes listen
 
 - Aging
 
@@ -234,7 +242,7 @@ Represent language users
 
     - Basic power law: $y = -0.05(x^{a})+0.005$
     
-```{r gamma-plot, echo = F, fig.height = 2, fig.width = 4}
+```{r gamma-plot, echo = F}
 gamma.function = function(a, b, age, constant){
     return ( constant * (age^a) + b )
 }
@@ -333,8 +341,13 @@ df2 |>
     geom_line(linewidth = 1)+
     theme_bw()+
     xlab("Proportional age (x)")+
-    ylab("Gamma")+
-    scale_color_brewer(name = "Perseverance (a)", palette = 5)
+    ylab("Learning rate (gamma)")+
+    scale_color_brewer(name = "Power law\nexponent", palette = 5)+
+  ggtitle("Perseverance of learning rate")
+
+ggsave(filename = "test.png",
+       dpi = 600, units = "in",
+       width = 4, height = 3)
 
 rm(high.cost, higher.cost, low.cost, normal.cost, lower.cost)
 ```
@@ -365,8 +378,14 @@ ggplot(gvdf,
   stat_summary(fun = mean, geom = "line")+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
   geom_text(aes(x = 80, y = 0.8), label = "Grammar 1\nas majority", color = "black")+
-  geom_text(aes(x = 15, y = 0.2), label = "Grammar 0\nas majority", color = "black")+
-  labs(caption = "50 runs per configuration, 1000 steps total per run")
+  geom_text(aes(x = 20, y = 0.2), label = "Grammar 0\nas majority", color = "black")+
+  geom_text(aes(x = 65, y = 0.5), label = "<- Dialect\nsubgroups", color = "black")+
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  ggtitle("Final state of language community")
+
+# ggsave(filename = "test2.png",
+#        dpi = 600, units = "in",
+#        width = 5, height = 4)
 ```
 
 ## Impact of learning rate
@@ -379,7 +398,12 @@ ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", fill = "lightblue", color = "black")+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.001)+
-  labs(caption = "50 runs per configuration, 1000 steps total per run")
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  ggtitle("Time to equilibrium")
+# 
+# ggsave(filename = "test3.png",
+#        dpi = 600, units = "in",
+#        width = 5, height = 4)
 ```
 
 
@@ -474,7 +498,7 @@ ggplot(gvdf_proc, aes(x = initial_gamma, y = eq_percent,
 <!--   labs(caption = "50 runs per configuration, 1000 steps total per run") -->
 <!-- ``` -->
 
-## Variation of speed of decrease (perseverance)
+## Variation of learning perseverance
 
 ```{r vosodp_data_import, echo = F}
 vgp_proc <- read_csv(here("paper","processed_data","vgp_proc.csv"), show_col_types = F)
@@ -498,17 +522,22 @@ ggplot(vgp,
 
 ```
 
-## Variation of speed of decrease (perseverance)
+## Variation of learning perseverance
 
 ```{r plot4.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
 ggplot(vgp_proc, aes(x = factor(perseverance), y = eq_percent,
                        group = factor(perseverance)))+
   xlab("Perseverance of learning")+
-  ylab("Time to equilibrium")+
+  ylab("Time to equilibrium (%)")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", fill = "turquoise", color = "black")+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
-  labs(caption = "50 runs per configuration, 1000 steps total per run")
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  ggtitle("Variation of learning perseverance")
+# 
+# ggsave(filename = "test4.png",
+#        dpi = 600, units = "in",
+#        width = 5, height = 4)
 ```
 
 ## Checkpoint
@@ -597,7 +626,7 @@ ggplot(tcg_group_proc |>
                      fill = factor(cohort2_age),
                      group = factor(percent_cohort2)))+
   xlab("Cohort 2 percentage")+
-  ylab("Time to equilibrium")+
+  ylab("Time to equilibrium (%)")+
   theme_bw()+
   stat_summary(fun = mean, geom = "bar", color = "black")+
   scale_fill_brewer(name = "Group 2 age", type = "qual",
@@ -605,7 +634,12 @@ ggplot(tcg_group_proc |>
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25)+
   labs(caption = "Faceted by cohort 2 age; 50 runs per configuration, 1000 steps total per run")+
   facet_grid(type~cohort2_age)+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  ggtitle("Age difference between the two cohorts")
+# 
+# ggsave(filename = "test5.png",
+#        dpi = 600, units = "in",
+#        width = 7, height = 4)
 ```
 
 ## Checkpoint
@@ -673,7 +707,7 @@ ggplot(vgg_g1v, aes(x = type, y = final_state, group = type, fill = type, color 
 - Innovator: when grammar varies only in the younger cohort, 
 However, when cohort 2 does not use grammar 1, cohort 1 starts with increasingly higher percentages of using grammar 1, they themselves may end up with using grammar 1 more, but it does not drive the overall group usage.
 
-## Cohort preference
+## Cohort anti-preference
 
 ```{r cp_data_import, echo = F}
 pref_proc <- read_csv(here("paper","processed_data","preference_proc.csv"), show_col_types = F)
@@ -681,12 +715,12 @@ pref_types <- read_csv(here("paper","processed_data","preference_final_state.csv
 ```
 
 ```{r plot7.1, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
-ggplot(pref_types, aes(x = percent_grammar_1, y = final_state,
+ggplot(pref_types |> filter(type == "Overall mean"), aes(x = percent_grammar_1, y = final_state,
              color = factor(chance_listen_to_outgroup),
              group = factor(chance_listen_to_outgroup)))+
   theme_bw()+
   xlab("Initial percent of grammar 1")+
-  ylab("Final state")+
+  ylab("Mean state of nodes")+
   scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
                      palette = 2)+ 
   # scale_shape_manual(name = "type", values = c(14, 15, 16))+
@@ -696,11 +730,16 @@ ggplot(pref_types, aes(x = percent_grammar_1, y = final_state,
   stat_summary(fun = mean, geom = "line")+
   # ggtitle("Different starting percentages")+
   labs(caption = "50 runs per configuration, 1000 steps total per run")+
-  facet_grid(~factor(type))
+  # facet_grid(~factor(type))+
+  ggtitle("Final state of language community")
+
+# ggsave(filename = "test6.png",
+#        dpi = 600, units = "in",
+#        width = 6, height = 4)
 
 ```
 
-## Cohort preference
+## Cohort anti-preference
 
 ```{r plot7.2, echo = F,  warning=F, message=F, fig.height=3.5, fig.width = 7}
 ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
@@ -711,10 +750,15 @@ ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
   theme_bw()+
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 2)+
   stat_summary(fun = mean, geom = "point", size = 2)+
-  stat_summary(fun = mean, geom = "line")+
+  stat_summary(fun = mean, geom = "line", linetype = "dashed")+
   scale_color_brewer(name = "Willingness to\nlisten to outgroup", type = "div",
-                    palette = 1)+ 
-  labs(caption = "50 runs per configuration, 1000 steps total per run")
+                    palette = 2)+ 
+  labs(caption = "50 runs per configuration, 1000 steps total per run")+
+  ggtitle("Anti-preference and time-to-equilibrium")
+
+# ggsave(filename = "test7.png",
+#        dpi = 600, units = "in",
+#        width = 8, height = 4)
 
 ```
 
@@ -724,9 +768,9 @@ ggplot(pref_proc, aes(x = percent_grammar_1, y = eq_percent,
 
 - Older cohort delays equilibrium
 
-- "Innovator" and "Reservoir" groups
+- "Innovator" and "Reservoir" groups?
 
-- Group preference will delay the equilibrium, and slightly impact equilibrium value
+- Group anti-preference will delay the equilibrium, and slightly impact equilibrium value
 
 ##
 

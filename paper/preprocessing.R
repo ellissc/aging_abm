@@ -299,7 +299,7 @@ tcg_proc <- tcg |>
   left_join(final_counts, by = "run_number") |> 
   mutate(equilibrium_reached = abs(mean_state_of_nodes-equilibrium)<0.01) |> 
   filter(equilibrium_reached == T) |> 
-  group_by(run_number, percent_cohort2, cohort2_age) |> 
+  group_by(run_number, percent_cohort2, cohort2_age, percent_grammar_1) |> 
   summarize(eq_step = min(step)) |> 
   mutate(max_steps = 1000,
          eq_percent = eq_step / max_steps)
@@ -349,7 +349,7 @@ tcg1 <- tcg |>
   left_join(final_group_counts, by = "run_number") |> 
   mutate(c1_equil_reached = abs(c1_equil-cohort1_state)<0.01) |> 
   filter(c1_equil_reached == T) |> 
-  group_by(run_number, percent_cohort2, cohort2_age) |> 
+  group_by(run_number, percent_cohort2, cohort2_age, percent_grammar_1) |> 
   summarize(eq_step = min(step)) |> 
   mutate(max_steps = 1000,
          eq_percent = eq_step / max_steps,
