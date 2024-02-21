@@ -1,17 +1,24 @@
-;; TODO:
-;; Finalize explanations
+;; TODO: Potentially swap out a person, replace turtles -- could keep the population size the same
+;; Replace in a linked fashion
+;; think about what it would mean for a new agent / set of agents to be added
+;; Stochastic block model? Connected caveman networks (similar to small world, then break a tie and reconnect)?
+;; YA should have weaker preferences? They're embedded and are constantly getting input / reinforcement
+;; Switch to an associative learning method?
+;; Need different assumptions -- figure out the explanation for what is going on...
+;; Ambiguous sentence as norm evolution?
 
+extensions [nw]
 globals [max-age]
 
-breed [nodes node]
+;breed [turtles turtle]
 
-nodes-own [
+turtles-own [
   state            ;; current grammar state (ranges from 0 to 1)
-  orig-state       ;; each person's initially assigned grammar state
-  spoken-state     ;; output of person's speech (0 or 1)
-  age              ;; current age of node
-  gamma            ;; learning rate of node
-  cohort           ;; group of node (1 or 2)
+  orig-state       ;; each turtle's initially assigned grammar state
+  spoken-state     ;; output of turtle's speech (0 or 1)
+  age              ;; current age of turtle
+  gamma            ;; learning rate of turtle
+  cohort           ;; group of turtle (1 or 2)
 ]
 
 ;;;
@@ -20,27 +27,54 @@ nodes-own [
 
 to setup
   clear-all
-  ;; set-default-shape nodes "circle"
-  ask patches [ set pcolor gray ]
-  repeat num-nodes [ make-node ]
+  ask patches [ set pcolor 8 ]
+;  repeat num-turtles [ make-turtle ]
+
+  ifelse (network-type = "small-world")
+  [ nw:generate-watts-strogatz turtles links num-turtles 2 0.1 [ turtle-setup ] ]
+  [ ifelse (network-type = "preferential")
+    [nw:generate-preferential-attachment turtles links num-turtles min-degree [ turtle-setup ]]
+    [nw:generate-random turtles links num-turtles random-link-prob [ turtle-setup ] ]
+  ]
+
+
+
+  ask links [set color black]
+
   initialize-groups
   distribute-grammars
-  create-network
-  let init-max-age (max [age] of nodes)
+;  create-network
+
+  let init-max-age (max [age] of turtles)
   set max-age (simulation-limit + init-max-age)
 
   if initial-gamma-based-on-age?
-  [ ask nodes [ gamma-by-age age gamma-change ] ]
+  [ ask turtles [ gamma-by-age age gamma-change ] ]
 
   repeat 100 [ layout ]
   reset-ticks
 end
 
-;; Create a new node, initialize its state
-to make-node
-  create-nodes 1 [
-    ;; start in random position near edge of world
+to make-turtle
+  create-turtles 1 [
     rt random-float 360
+    fd max-pxcor
+    set size 3
+    set state 0.0
+    set age 0
+
+    ifelse deterministic-gamma?
+    [ set gamma initial-gamma ]
+    [ let temp-gamma random-normal initial-gamma gamma-sd
+      ifelse temp-gamma > 0
+      [ set gamma temp-gamma ]
+      [ set gamma 0.01 ]
+    ]
+  ]
+end
+
+to turtle-setup
+  rt random-float 360
     fd max-pxcor
     set size 2
     set state 0.0
@@ -51,23 +85,19 @@ to make-node
     [ let temp-gamma random-normal initial-gamma gamma-sd
       ifelse temp-gamma > 0
       [ set gamma temp-gamma ]
-      [ set gamma 0.01 ] ;; Setting 0.01 as the initial lower bound for gamma, though it can change later
-
+      [ set gamma 0.01 ]
     ]
-
-
-  ]
 end
 
 to initialize-groups
-  ask nodes [set cohort 1]
+  ask turtles [set cohort 1]
 
-  ask n-of ((percent-cohort2 / 100) * num-nodes) nodes
+  ask n-of ((percent-cohort2 / 100) * num-turtles) turtles
   [ set cohort 2]
 
-  ask nodes [ initialize-age ]
+  ask turtles [ initialize-age ]
 
-  ask nodes [ update-shape ]
+  ask turtles [ update-shape ]
 end
 
 to update-shape
@@ -100,62 +130,54 @@ to initialize-age
   ]
 end
 
-;; Initialize a select proportion of individuals to start with grammar 1
 to distribute-grammars
-  ask nodes [ set state 0 ]
+  ask turtles [ set state 0 ]
 
   ifelse cohort-based-grammar
   [
-    let cohort1-num count nodes with [cohort = 1]
-    let cohort2-num count nodes with [cohort = 2]
-    ;; cohort 1
-    ask n-of ((C1-percent-grammar-1 / 100) * cohort1-num) nodes with [cohort = 1]
+    let cohort1-num count turtles with [cohort = 1]
+    let cohort2-num count turtles with [cohort = 2]
+    ask n-of ((C1-percent-grammar-1 / 100) * cohort1-num) turtles with [cohort = 1]
     [ set state 1.0 ]
 
-    ;; cohort 2
-    ask n-of ((C2-percent-grammar-1 / 100) * cohort2-num) nodes with [cohort = 2]
+    ask n-of ((C2-percent-grammar-1 / 100) * cohort2-num) turtles with [cohort = 2]
     [ set state 1.0 ]
   ]
   [
-    ;; ask a select proportion of people to switch to 1
-    ask n-of ((percent-grammar-1 / 100) * num-nodes) nodes
+    ask n-of ((percent-grammar-1 / 100) * num-turtles) turtles
     [ set state 1.0 ]
   ]
 
   if random-init-state [
-    ask nodes [set state random-float 1.0]
+    ask turtles [set state random-float 1.0]
   ]
 
-  ask nodes [
-    set orig-state state     ;; used in reset-states
-    set spoken-state state   ;; initial spoken state, for first timestep
+  ask turtles [
+    set orig-state state
+    set spoken-state state
     update-color
   ]
 end
 
 to-report cohort1-state
-  report mean [state] of nodes with [cohort = 1]
+  report mean [state] of turtles with [cohort = 1]
 end
 
 to-report cohort2-state
-  report mean [state] of nodes with [cohort = 2]
+  report mean [state] of turtles with [cohort = 2]
 end
 
 to create-network
-  ;; make the initial network of two nodes and an edge
   let partner nobody
-  let first-node one-of nodes
-  let second-node one-of nodes with [self != first-node]
-  ;; make the first edge
-  ask first-node [ create-link-with second-node [ set color white ] ]
-  ;; randomly select unattached node to add to network
-  let new-node one-of nodes with [not any? link-neighbors]
-  ;; and connect it to a partner already in the network
-  while [new-node != nobody] [
+  let first-turtle one-of turtles
+  let second-turtle one-of turtles with [self != first-turtle]
+  ask first-turtle [ create-link-with second-turtle [ set color white ] ]
+  let new-turtle one-of turtles with [not any? link-neighbors]
+  while [new-turtle != nobody] [
     set partner find-partner
-    ask new-node [ create-link-with partner [ set color white ] ]
+    ask new-turtle [ create-link-with partner [ set color white ] ]
     layout
-    set new-node one-of nodes with [not any? link-neighbors]
+    set new-turtle one-of turtles with [not any? link-neighbors]
   ]
 end
 
@@ -169,46 +191,20 @@ to grow-older [ growth-influence ]
 end
 
 to gamma-by-age [ age-param growth-influence ]
-  let a perseverance  ;; perseverance of learning, when set to increase:
-                    ;; low a means initially learn quickly, high a
-                    ;; as exponential curve in learning rate
-
-  ;; growth-influence -- direction of change, does gamma increase or decrease or stay the same?
-
-  let b initial-gamma ;; b as the initial / lowest gamma
-
+  let a perseverance
+  let b initial-gamma
   if (growth-influence = 1) [ set b 0.01 ]
   if (growth-influence = -1) [ set b 0.04 ]
   if (growth-influence = 0) [ set b 0.025 ]
-
-  let constant 0.04 ;; shrinks the function to the proper range
-
-
-  let age-prop (age-param / max-age)  ;; normalizes age between 0 and 1
-
+  let constant 0.04
+  let age-prop (age-param / max-age)
   let new-gamma ((constant * growth-influence *(age-prop ^ a) ) + b)
-
   set gamma new-gamma
 end
 
-;to modify-gamma-old [ growth-influence ]
-;  let linear-constant 0.001
-;  let minimum-gamma 0.0001
-;  if (ticks mod 100 = 0)
-;  [
-;    ifelse (growth-influence = "increases")
-;    [ set gamma gamma + linear-constant ]
-;    [ if (growth-influence = "decreases")
-;      [set gamma gamma - linear-constant ]
-;    ]
-;  ]
-;  if (gamma < minimum-gamma) [set gamma minimum-gamma]
-;end
-
-
-to reset-nodes
+to reset-turtles
   clear-all-plots
-  ask nodes [
+  ask turtles [
     set state orig-state
     update-color
   ]
@@ -221,7 +217,6 @@ to redistribute-grammars
   reset-ticks
 end
 
-;; reports a string of the agent's initial grammar
 to-report orig-grammar-string
   report ifelse-value orig-state = 1.0 ["1"] ["0"]
 end
@@ -232,47 +227,38 @@ end
 
 to go
   if (ticks = simulation-limit) [stop]
-  ask nodes [ communicate-via update-algorithm ]
-  ask nodes [ update-color ]
-  ask nodes [ grow-older gamma-change]
+  ask turtles [ communicate-via update-algorithm ]
+  ask turtles [ update-color ]
+  ask turtles [ grow-older gamma-change]
   tick
 end
 
-to communicate-via [ algorithm ] ;; node procedure
-  ;; Discrete Grammar ;;
+to communicate-via [ algorithm ]
   ifelse (algorithm = "threshold")
   [ listen-threshold ]
   [ ifelse (algorithm = "individual")
     [ listen-individual ]
-    [ ;; Probabilistic Grammar ;;
-      ;; speak and ask all neighbors to listen
-      if (algorithm = "reward")
+    [ if (algorithm = "reward")
       [ speak
         ask link-neighbors
         [ listen [spoken-state] of myself [cohort] of myself ]
-   ]]]
+      ]
+    ]
+  ]
 end
 
-;; Speaking & Listening
-to listen-threshold ;; node procedure
+to listen-threshold
   let grammar-one-sum sum [state] of link-neighbors
   ifelse grammar-one-sum >= (count link-neighbors * threshold-val)
   [ set state 1 ]
-  [ ;; if there are not enough neighbors with grammar 1,
-    ;; and 1 is not a sink state, then change to 0
-    if not sink-state-1? [ set state 0 ]
-  ]
+  [ if not sink-state-1? [ set state 0 ] ]
 end
 
 to listen-individual
   set state [state] of one-of link-neighbors
 end
 
-to speak ;; node procedure
-  ;; alpha is the level of bias in favor of grammar 1
-  ;; alpha is constant for all nodes.
-  ;; the alpha value of 0.025 works best with the logistic function
-  ;; adjusted so that it takes input values [0,1] and output to [0,1]
+to speak
   if logistic?
   [ let gain (alpha + 0.1) * 20
     let filter-val 1 / (1 + exp (- (gain * state - 1) * 5))
@@ -280,12 +266,8 @@ to speak ;; node procedure
     [ set spoken-state 1 ]
     [ set spoken-state 0 ]
   ]
-  ;; for probabilistic learners who only have bias for grammar 1
-  ;; no preference for discrete grammars (i.e., no logistic)
   if not logistic?
-  [ ;; the slope needs to be greater than 1, so we arbitrarily set to 1.5
-    ;; when state is >= 2/3, the biased-val would be greater than or equal to 1
-    let biased-val 1.5 * state
+  [ let biased-val 1.5 * state
     if biased-val >= 1 [ set biased-val 1 ]
     ifelse random-float 1.0 <= biased-val
     [ set spoken-state 1 ]
@@ -293,51 +275,34 @@ to speak ;; node procedure
   ]
 end
 
-;; Listening uses a linear reward/punish algorithm
-to listen [heard-state heard-cohort] ;; node procedure
-
-  ;; Moved gamma to agents own
-  ;; let gamma 0.01 ;; for now, gamma is the same for all nodes
-
+to listen [heard-state heard-cohort]
   let listen-chance 1
-
-  if heard-cohort != cohort ;; outgroup
-  [ if random-float 1.0 >= chance-listen-to-outgroup  ;; won't listen as (1-p)
+  if heard-cohort != cohort
+  [ if random-float 1.0 >= chance-listen-to-outgroup
     [ set listen-chance 0]
   ]
 
-  ;; if they will listen
   if listen-chance = 1
   [
-    ;; choose a grammar state to be in
     ifelse random-float 1.0 <= state
     [
-      ;; if grammar 1 was heard
       ifelse heard-state = 1
-      [ set state state + (gamma * (1 - state)) ] ;; reward: match, increase state
-      [ set state (1 - gamma) * state ]           ;; punish: mismatch, decrease state
-    ][
-      ;; if grammar 0 was heard
+      [ set state state + (gamma * (1 - state)) ]
+      [ set state (1 - gamma) * state ]
+    ]
+    [
       ifelse heard-state = 0
-      [ set state state * (1 - gamma) ]           ;; reward: match, decrease state
-      [ set state gamma + state * (1 - gamma) ]   ;; punish: mismatch, increase state
+      [ set state state * (1 - gamma) ]
+      [ set state gamma + state * (1 - gamma) ]
     ]
   ]
 end
 
-;;
-;; Making the network
-;;
-;; This code is borrowed from Lottery Example, from the Code Examples section of the Models Library.
-;; The idea behind this procedure is as the following.
-;; The sum of the sizes of the turtles is set as the number of "tickets" we have in our lottery.
-;; Then we pick a random "ticket" (a random number), and we step through the
-;; turtles to find which turtle holds that ticket.
 to-report find-partner
-  let pick random-float sum [count link-neighbors] of (nodes with [any? link-neighbors])
+  let pick random-float sum [count link-neighbors] of (turtles with [any? link-neighbors])
   let partner nobody
-  ask nodes
-  [ ;; if there's no winner yet
+  ask turtles
+  [
     if partner = nobody
     [ ifelse count link-neighbors > pick
       [ set partner self]
@@ -351,46 +316,37 @@ to layout
   layout-spring (turtles with [any? link-neighbors]) links 1 6 1
 end
 
-to highlight
-  ifelse mouse-inside?
-    [ do-highlight ]
-    [ undo-highlight ]
-  display
-end
-
-;; remove any previous highlights
-to undo-highlight
-  clear-output
-  ask nodes [ update-color ]
-  ask links [ set color white ]
-end
-
-to do-highlight
-  let highlight-color blue
-  let min-d min [distancexy mouse-xcor mouse-ycor] of nodes
-  ;; get the node closest to the mouse
-  let the-node one-of nodes with
-  [any? link-neighbors and distancexy mouse-xcor mouse-ycor = min-d]
-  ;; get the node that was previously the highlight-color
-  let highlighted-node one-of nodes with [color = highlight-color]
-  if the-node != nobody and the-node != highlighted-node
-  [ ;; highlight the chosen node
-    ask the-node
-    [ undo-highlight
-      output-print word "original grammar state: "  orig-grammar-string
-      output-print word "current grammar state: " precision state 5
-      set color highlight-color
-      ;; highlight edges connecting the chosen node to its neighbors
-      ask my-links [ set color cyan - 1 ]
-      ;; highlight neighbors
-      ask link-neighbors [ set color blue + 1 ]
-    ]
-  ]
-end
-
-
-; Copyright 2007 Uri Wilensky.
-; See Info tab for full copyright and license.
+;to highlight
+;  ifelse mouse-inside?
+;    [ do-highlight ]
+;    [ undo-highlight ]
+;  display
+;end
+;
+;to undo-highlight
+;  clear-output
+;  ask turtles [ update-color ]
+;  ask links [ set color white ]
+;end
+;
+;to do-highlight
+;  let highlight-color blue
+;  let min-d min [distancexy mouse-xcor mouse-ycor] of turtles
+;  let the-turtle one-of turtles with
+;  [any? link-neighbors and distancexy mouse-xcor mouse-ycor = min-d]
+;  let highlighted-turtle one-of turtles with [color = highlight-color]
+;  if the-turtle != nobody and the-turtle != highlighted-turtle
+;  [
+;    ask the-turtle
+;    [ undo-highlight
+;      output-print word "original grammar state: "  orig-grammar-string
+;      output-print word "current grammar state: " precision state 5
+;      set color highlight-color
+;      ask my-links [ set color cyan - 1 ]
+;      ask link-neighbors [ set color blue + 1 ]
+;    ]
+;  ]
+;end
 @#$#@#$#@
 GRAPHICS-WINDOW
 375
@@ -476,7 +432,7 @@ BUTTON
 203
 194
 reset states
-reset-nodes
+reset-turtles
 NIL
 1
 T
@@ -487,33 +443,16 @@ NIL
 NIL
 0
 
-BUTTON
-226
-80
-366
-114
-NIL
-highlight
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 SLIDER
 10
 45
 205
 78
-num-nodes
-num-nodes
-2
+num-turtles
+num-turtles
+0
 500
-200.0
+360.0
 10
 1
 NIL
@@ -666,12 +605,12 @@ NIL
 HORIZONTAL
 
 MONITOR
-1065
-10
-1149
-55
+1235
+260
+1305
+305
 Mean state
-mean [state] of nodes
+mean [state] of turtles
 3
 1
 11
@@ -704,7 +643,7 @@ TEXTBOX
 PLOT
 1065
 135
-1250
+1230
 255
 Age distribution
 NIL
@@ -717,7 +656,7 @@ true
 false
 "" ""
 PENS
-"default" 25.0 1 -16777216 true "" "histogram [age] of nodes"
+"default" 25.0 1 -16777216 true "" "histogram [age] of turtles"
 
 SWITCH
 0
@@ -746,9 +685,9 @@ NIL
 HORIZONTAL
 
 PLOT
-1155
+1065
 10
-1315
+1230
 130
 Gamma distribution
 NIL
@@ -761,15 +700,15 @@ true
 false
 "" ""
 PENS
-"default" 0.001 1 -16777216 true "" "histogram [gamma] of nodes"
+"default" 0.001 1 -16777216 true "" "histogram [gamma] of turtles"
 
 MONITOR
-1065
-85
-1150
-130
-Mean gamma
-mean [gamma] of nodes
+1235
+10
+1305
+55
+Mean g.
+mean [gamma] of turtles
 3
 1
 11
@@ -807,7 +746,7 @@ TEXTBOX
 SLIDER
 450
 410
-625
+600
 443
 percent-cohort2
 percent-cohort2
@@ -832,7 +771,7 @@ Additions: AGE
 SWITCH
 450
 445
-625
+600
 478
 deterministic-age?
 deterministic-age?
@@ -841,9 +780,9 @@ deterministic-age?
 -1000
 
 SLIDER
-520
+495
 480
-625
+600
 513
 cohort1-age
 cohort1-age
@@ -856,9 +795,9 @@ NIL
 HORIZONTAL
 
 SLIDER
-520
+495
 515
-625
+600
 548
 cohort2-age
 cohort2-age
@@ -871,10 +810,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-520
+495
 550
-625
-581
+600
+583
 age-sd
 age-sd
 0
@@ -886,9 +825,9 @@ NIL
 HORIZONTAL
 
 MONITOR
-1255
+1235
 185
-1325
+1300
 230
 NIL
 max-age
@@ -908,12 +847,12 @@ initial-gamma-based-on-age?
 -1000
 
 MONITOR
-1255
+1235
 135
-1325
+1302
 180
 Mean age
-mean [age] of nodes
+mean [age] of turtles
 3
 1
 11
@@ -929,9 +868,9 @@ perseverance
 2
 
 SLIDER
-635
+605
 515
-825
+795
 548
 chance-listen-to-outgroup
 chance-listen-to-outgroup
@@ -944,9 +883,9 @@ NIL
 HORIZONTAL
 
 SWITCH
-635
+605
 410
-825
+795
 443
 cohort-based-grammar
 cohort-based-grammar
@@ -955,9 +894,9 @@ cohort-based-grammar
 -1000
 
 SLIDER
-635
+605
 445
-825
+795
 478
 C1-percent-grammar-1
 C1-percent-grammar-1
@@ -970,9 +909,9 @@ C1-percent-grammar-1
 HORIZONTAL
 
 SLIDER
-635
+605
 480
-825
+795
 513
 C2-percent-grammar-1
 C2-percent-grammar-1
@@ -1002,14 +941,14 @@ false
 PENS
 "default" 1.0 0 -2674135 true "" "plot cohort1-state"
 "pen-1" 1.0 0 -13345367 true "" "plot cohort2-state"
-"pen-2" 5.0 2 -5987164 true "" "if ((ticks mod 5) = 0) [ plot mean [state] of nodes ] "
+"pen-2" 5.0 2 -5987164 true "" "if ((ticks mod 5) = 0) [ plot mean [state] of turtles ] "
 
 PLOT
 1065
 260
-1250
+1230
 380
-Distribution of node state
+State distribution
 NIL
 NIL
 0.0
@@ -1020,7 +959,7 @@ true
 false
 "" ""
 PENS
-"default" 0.01 1 -16777216 true "" "histogram [state] of nodes"
+"default" 0.01 1 -16777216 true "" "histogram [state] of turtles"
 
 PLOT
 750
@@ -1038,8 +977,8 @@ true
 false
 "" "clear-plot"
 PENS
-"default" 1.0 2 -13345367 true "" "ask nodes with [cohort = 1] [plotxy age state ]"
-"pen-1" 1.0 2 -2674135 true "" "ask nodes with [cohort = 2] [plotxy age state ]"
+"default" 1.0 2 -13345367 true "" "ask turtles with [cohort = 1] [plotxy age state ]"
+"pen-1" 1.0 2 -2674135 true "" "ask turtles with [cohort = 2] [plotxy age state ]"
 
 TEXTBOX
 5
@@ -1062,9 +1001,9 @@ Additions: GAMMA-BY-AGE
 1
 
 TEXTBOX
-635
+605
 395
-920
+890
 421
 Additions: COHORTS (1 as square, 2 as triangle)
 11
@@ -1072,9 +1011,9 @@ Additions: COHORTS (1 as square, 2 as triangle)
 1
 
 SWITCH
-830
+800
 410
-1020
+920
 443
 delay-cohort
 delay-cohort
@@ -1083,12 +1022,12 @@ delay-cohort
 -1000
 
 SLIDER
-830
+800
 445
-1020
+920
 478
-cohort-delay-period
-cohort-delay-period
+delay-period
+delay-period
 0
 200
 100.0
@@ -1098,10 +1037,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-1025
-410
-1192
-443
+800
+505
+950
+538
 random-init-state
 random-init-state
 0
@@ -1109,10 +1048,10 @@ random-init-state
 -1000
 
 TEXTBOX
-1030
-445
-1180
-486
+805
+540
+955
+581
 If random-init-state, it will\noverride any other starting\npercent grammar settings
 11
 0.0
@@ -1139,6 +1078,93 @@ TEXTBOX
 495
 585
 * Gamma-change determines whether gamma changes with age, and the directionality\n* Perseverance determines the shape/slope
+11
+0.0
+1
+
+CHOOSER
+980
+405
+1118
+450
+network-type
+network-type
+"random" "small-world" "preferential"
+2
+
+CHOOSER
+980
+455
+1118
+500
+layout-type
+layout-type
+"spring"
+0
+
+BUTTON
+225
+80
+365
+113
+Clear
+clear-all ca
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+980
+505
+1120
+538
+random-link-prob
+random-link-prob
+0
+1
+0.1
+0.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+980
+545
+1120
+578
+min-degree
+min-degree
+1
+5
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+1125
+515
+1275
+531
+* Random network only
+11
+0.0
+1
+
+TEXTBOX
+1125
+550
+1275
+568
+* Preferential network only
 11
 0.0
 1
