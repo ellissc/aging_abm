@@ -3,3 +3,4 @@ NetLogo 6.3.0
 */.DS_Store
 code/*.csv
 .DS_Store
+code/nlogo_runs.tar.gz
